@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>兰生大厦 · AI赋能智慧水务运维系统</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a1424;--bg2:#0c1830;--panel:#101f38;--panel2:#0d1a2f;--line:rgba(72,140,255,.18);
+  --cyan:#2dd4bf;--blue:#38bdf8;--txt:#dbe7f5;--sub:#8fa8c7;--dim:#5c7492;
+  --ok:#34d399;--warn:#fbbf24;--danger:#f87171;--orange:#fb923c;--purple:#a78bfa;
+}
+html,body{height:100%}
+body{
+  background:radial-gradient(1200px 700px at 75% -10%,#12294d 0%,var(--bg) 55%) fixed,var(--bg);
+  color:var(--txt);font:14px/1.65 "Microsoft YaHei","PingFang SC",sans-serif;overflow-x:hidden;
+}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ===== 侧边导航 ===== */
+#side{position:fixed;left:0;top:0;bottom:0;width:212px;background:linear-gradient(180deg,#0d1b33,#0a1526);border-right:1px solid var(--line);z-index:50;display:flex;flex-direction:column}
+#side .logo{padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+#side .logo b{font-size:16px;color:#fff;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+#side .logo small{display:block;color:var(--dim);font-size:11px;margin-top:3px;letter-spacing:1px}
+#nav{flex:1;overflow-y:auto;padding:8px 0}
+.ni{padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#9fb3cf;font-size:13.5px;border-left:3px solid transparent;transition:.15s;user-select:none;white-space:nowrap}
+.ni:hover{color:#d7e7ff;background:rgba(56,132,255,.07)}
+.ni.on{color:#5eead4;border-left-color:var(--cyan);background:linear-gradient(90deg,rgba(45,212,191,.14),transparent)}
+.ni .ic{width:20px;text-align:center}
+#side .foot{padding:10px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--dim);line-height:1.8}
+.dot-ok{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok);margin-right:5px}
+
+/* ===== 顶栏 ===== */
+#topbar{position:fixed;left:212px;right:0;top:0;height:60px;background:rgba(10,20,36,.85);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:40;display:flex;align-items:center;padding:0 22px;gap:16px}
+#topbar h1{font-size:16px;color:#fff;font-weight:600;letter-spacing:.5px;white-space:nowrap}
+#topbar h1 em{font-style:normal;color:var(--cyan)}
+.tb-badge{font-size:11px;color:#7dd3fc;background:rgba(56,132,255,.12);border:1px solid rgba(56,132,255,.3);padding:2px 10px;border-radius:10px;white-space:nowrap}
+#tbRight{margin-left:auto;display:flex;align-items:center;gap:14px}
+.wxchip{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);background:rgba(255,255,255,.04);border:1px solid var(--line);padding:4px 12px;border-radius:16px;white-space:nowrap}
+.wxchip.rain{color:#fde68a;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.08)}
+.wxchip.storm{color:#fecaca;border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.1)}
+#clock{font-family:Consolas,monospace;font-size:15px;color:#e2f3ff;letter-spacing:1px}
+#bell{position:relative;cursor:pointer;font-size:19px;padding:4px}
+#bellCnt{position:absolute;top:-4px;right:-6px;background:#dc2626;color:#fff;font-size:10px;min-width:16px;text-align:center;border-radius:8px;line-height:16px;padding:0 3px;display:none}
+.stageBadge{font-size:11px;color:#5eead4;border:1px solid rgba(45,212,191,.4);background:rgba(45,212,191,.08);padding:2px 10px;border-radius:10px;white-space:nowrap}
+
+/* ===== 主区布局 ===== */
+#main{margin-left:212px;padding:74px 20px 26px}
+.page{display:none}
+.page.on{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.row{display:grid;gap:14px;margin-bottom:14px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}.g6{grid-template-columns:repeat(6,1fr)}
+.panel{background:linear-gradient(160deg,rgba(20,40,72,.75),rgba(13,26,47,.9));border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.panel h3{margin:0 0 12px;font-size:14.5px;color:#9fd8ff;font-weight:600;display:flex;align-items:center;gap:8px;letter-spacing:.5px}
+.panel h3 .more{margin-left:auto;font-size:11px;color:var(--dim);font-weight:400;cursor:pointer}
+.panel h3 .more:hover{color:var(--cyan)}
+.chart{width:100%;display:block}
+.dim{color:var(--sub)}
+.small{font-size:12px}
+.center{text-align:center}
+
+/* ===== KPI 卡片 ===== */
+.kpi{position:relative;overflow:hidden}
+.kpi .lb{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:6px}
+.kpi .v{font-size:25px;font-weight:700;color:#fff;font-family:Consolas,"Microsoft YaHei",monospace;margin:4px 0 2px}
+.kpi .v small{font-size:12px;color:var(--dim);font-weight:400;margin-left:2px}
+.kpi .tr{font-size:11px}
+.kpi .ic{position:absolute;right:10px;top:10px;font-size:21px;opacity:.75}
+.up{color:var(--ok)}.bad{color:var(--danger)}.mid{color:var(--warn)}
+
+/* ===== 灾害预警横幅 ===== */
+.disaster{display:none;border:1px solid rgba(248,113,113,.55);background:linear-gradient(90deg,rgba(248,113,113,.16),rgba(251,146,60,.12));border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#fecaca;align-items:center;gap:12px;animation:blink2 1.2s infinite}
+.disaster.show{display:flex}
+.disaster b{color:#fff;font-size:14px}
+.disaster .lv{font-size:22px}
+@keyframes blink2{50%{border-color:rgba(248,113,113,.25)}}
+
+/* ===== 徽标/状态 ===== */
+.bg{display:inline-block;font-size:11px;padding:1px 8px;border-radius:9px;line-height:17px;white-space:nowrap}
+.b-ok{background:rgba(52,211,153,.14);color:#6ee7b7}
+.b-warn{background:rgba(251,191,36,.14);color:#fcd34d}
+.b-dgr{background:rgba(248,113,113,.16);color:#fca5a5}
+.b-info{background:rgba(56,132,255,.15);color:#7dd3fc}
+.b-mute{background:rgba(140,160,190,.12);color:#9fb3cf}
+.b-pur{background:rgba(167,139,250,.15);color:#c4b5fd}
+
+/* ===== 按钮 ===== */
+.btn{display:inline-flex;align-items:center;gap:5px;background:rgba(45,212,191,.1);color:#5eead4;border:1px solid rgba(45,212,191,.4);padding:5px 14px;border-radius:8px;font-size:12.5px;cursor:pointer;transition:.15s;user-select:none}
+.btn:hover{background:rgba(45,212,191,.22)}
+.btn.blue{background:rgba(56,132,255,.12);color:#7dd3fc;border-color:rgba(56,132,255,.45)}
+.btn.blue:hover{background:rgba(56,132,255,.22)}
+.btn.warn{background:rgba(251,191,36,.1);color:#fcd34d;border-color:rgba(251,191,36,.4)}
+.btn.warn:hover{background:rgba(251,191,36,.2)}
+.btn.dgr{background:rgba(248,113,113,.1);color:#fca5a5;border-color:rgba(248,113,113,.45)}
+.btn.dgr:hover{background:rgba(248,113,113,.2)}
+.btn.ghost{background:transparent;color:var(--sub);border-color:var(--line)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sm{padding:2px 9px;font-size:11.5px;border-radius:6px}
+
+/* ===== 表格 ===== */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{color:var(--dim);font-weight:500;text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:7px 10px;border-bottom:1px dashed rgba(72,140,255,.1);color:#c9d8ec;white-space:nowrap}
+.tbl tr:hover td{background:rgba(56,132,255,.05)}
+.tbl tr.click{cursor:pointer}
+
+/* ===== 液位网格 ===== */
+.lvgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.lvc{background:rgba(10,22,42,.6);border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;transition:.15s}
+.lvc:hover{border-color:rgba(45,212,191,.5)}
+.lvc .nm{font-size:12px;color:#c9d8ec;display:flex;justify-content:space-between;gap:4px;white-space:nowrap}
+.lvc .pc{font-family:Consolas;font-size:16px;font-weight:700;color:#fff}
+.bar{height:7px;border-radius:4px;background:#132741;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#0ea5e9,#38bdf8);transition:width .8s}
+.bar i.warn{background:linear-gradient(90deg,#d97706,#fbbf24)}
+.bar i.dgr{background:linear-gradient(90deg,#b91c1c,#f87171)}
+.bar i.fire{background:linear-gradient(90deg,#dc2626,#f87171)}
+.bar.mini{height:6px}
+
+/* ===== 全景态势 ===== */
+.panorama{display:grid;grid-template-columns:1.15fr 1.6fr 1fr;gap:14px}
+.psub{background:rgba(10,22,42,.55);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.psub h4{font-size:13px;color:#7dd3fc;margin-bottom:10px;font-weight:600}
+.chain{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.node{background:#0c1a30;border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:11.5px;color:#c9d8ec;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.node .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 5px var(--ok)}
+.node.run .dot{background:#fbbf24;box-shadow:0 0 6px #fbbf24;animation:pulse 1s infinite}
+.node.dgr{border-color:rgba(248,113,113,.5);color:#fca5a5}
+.node.dgr .dot{background:#f87171;box-shadow:0 0 6px #f87171}
+.edge{color:#2c4a73;font-size:14px}
+.floodline{display:flex;align-items:center;gap:8px;padding:3.5px 0;font-size:11.5px}
+.floodline .nm{width:112px;color:#c9d8ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.floodline .bar{flex:1;margin-top:0}
+.floodline .pc{width:46px;text-align:right;font-family:Consolas;color:#e2f3ff;flex-shrink:0}
+.floodline .pump{width:48px;font-size:10.5px;text-align:center;color:var(--dim);flex-shrink:0}
+.floodline .pump.run{color:#fbbf24}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.gauge{width:150px;height:150px;border-radius:50%;position:relative;background:conic-gradient(#34d399 0%,#132741 0)}
+.gauge::before{content:'';position:absolute;inset:15px;border-radius:50%;background:#0d1a2f}
+.gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+.gauge-center .lv{font-size:32px;font-weight:700;line-height:1}
+.gauge-center .lb{font-size:11px;color:var(--sub);margin-top:4px}
+.gauge-center .sc{font-size:11px;color:var(--dim);margin-top:2px;font-family:Consolas}
+.stormtag{font-size:12.5px;color:#fca5a5;text-align:center}
+.stormtag b{font-size:15px;color:#fff}
+.floodstat{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub);padding:3px 0}
+
+/* ===== 日志/事件流 ===== */
+.logbox{height:250px;overflow-y:auto;font-family:Consolas,"Microsoft YaHei",monospace;font-size:12px;line-height:1.9}
+.lg{padding:1px 2px;border-bottom:1px dashed rgba(72,140,255,.08);display:flex;gap:8px}
+.lg .t{color:var(--dim);flex-shrink:0}
+.lg .tag{flex-shrink:0;width:44px;text-align:center;border-radius:4px;font-size:10.5px;line-height:18px;margin-top:2px}
+.lg.info .tag{background:rgba(56,132,255,.15);color:#7dd3fc}
+.lg.ok .tag{background:rgba(52,211,153,.15);color:#6ee7b7}
+.lg.warn .tag{background:rgba(251,191,36,.16);color:#fcd34d}
+.lg.dgr .tag{background:rgba(248,113,113,.16);color:#fca5a5}
+.lg.ai .tag{background:rgba(167,139,250,.18);color:#c4b5fd}
+.lg .m{color:#c9d8ec;word-break:break-all}
+.lg.ok .m{color:#a7f3d0}.lg.dgr .m{color:#fecaca}.lg.warn .m{color:#fde68a}.lg.ai .m{color:#ddd6fe}
+
+/* ===== 智能体管线 ===== */
+.pipe{display:flex;align-items:stretch;gap:6px;margin:6px 0 4px}
+.stg{flex:1;background:rgba(10,22,42,.65);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;position:relative;transition:.25s;min-width:0}
+.stg .ic{font-size:20px}
+.stg .nm{font-size:12.5px;color:#c9d8ec;margin-top:4px;white-space:nowrap}
+.stg .ds{font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stg.on{border-color:var(--cyan);background:rgba(45,212,191,.12);box-shadow:0 0 14px rgba(45,212,191,.25);transform:translateY(-2px)}
+.stg.on .nm{color:#5eead4}
+.arw{align-self:center;color:#2c4a73;font-size:15px;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.pulsing{animation:pulse 1s infinite}
+
+/* ===== 处置任务面板 ===== */
+.taskpanel{margin-top:12px;background:rgba(10,22,42,.62);border:1px solid rgba(45,212,191,.32);border-radius:10px;padding:10px 14px}
+.taskpanel .tp-head{display:flex;justify-content:space-between;align-items:center;font-size:12.5px}
+.taskpanel .tp-title b{color:#5eead4}
+.taskpanel .tp-step{font-family:Consolas;color:#fbbf24;font-size:12px}
+.taskpanel .tp-bar{height:6px;background:#132741;border-radius:3px;overflow:hidden;margin:8px 0}
+.taskpanel .tp-bar i{display:block;height:100%;background:linear-gradient(90deg,#0d9488,#2dd4bf);transition:width .5s}
+.taskpanel .tp-cur{font-size:12px;color:var(--sub)}
+.taskpanel .tp-cur b{color:#7dd3fc}
+
+/* ===== Agent 卡片 ===== */
+.agent-card{min-height:156px;transition:.2s}
+.agent-card.busy{border-color:rgba(45,212,191,.55);box-shadow:0 0 16px rgba(45,212,191,.18)}
+.agent-card .ac-head{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.agent-card .ac-head .ic{font-size:19px}
+.agent-card .ac-head .nm{font-size:13px;color:#e2f3ff;font-weight:600}
+.agent-card .ac-head .st{margin-left:auto}
+.agent-card .ds{font-size:11.5px;color:var(--sub);line-height:1.7;margin-bottom:8px}
+.agent-card .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.agent-card .ac-foot{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);border-top:1px dashed rgba(72,140,255,.12);padding-top:7px}
+
+/* ===== 数字孪生 ===== */
+.twin-wrap{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px}
+#twinBox{padding:6px}
+#twin{width:100%;display:block;border-radius:10px}
+.eq{cursor:pointer}
+.eq:hover .eqbody{filter:brightness(1.35)}
+.eq.sel .eqbody{stroke:#5eead4;stroke-width:2}
+.eq text{font-family:"Microsoft YaHei";pointer-events:none}
+.mode-fire .eq.sys-living,.mode-fire .eq.sys-drain{opacity:.14}
+.mode-life .eq.sys-fire,.mode-life .eq.sys-drain{opacity:.14}
+.mode-drain .eq.sys-living,.mode-drain .eq.sys-fire{opacity:.14}
+.eq,.eq *{transition:opacity .3s}
+@keyframes ring{0%{r:10;opacity:.85;stroke-width:3}100%{r:34;opacity:0;stroke-width:1}}
+.pulse-ring{animation:ring 1.2s ease-out 3;fill:none}
+@keyframes flowA{to{stroke-dashoffset:-26}}
+.flow{stroke-dasharray:5 8;animation:flowA .8s linear infinite;fill:none}
+.eqd .kv{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed rgba(72,140,255,.12);font-size:12.5px}
+.eqd .kv b{color:#e2f3ff;font-family:Consolas}
+.eqd h4{color:#5eead4;font-size:15px;margin-bottom:2px}
+.eqbtns{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.floodmark{fill:none;stroke:#7dd3fc;stroke-width:1.5;stroke-dasharray:3 3}
+.floodmark.deep{stroke:#f87171}
+
+/* ===== 滑块 ===== */
+.sl{margin:10px 0}
+.sl label{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:4px}
+.sl label b{color:#5eead4;font-family:Consolas}
+.sl input[type=range]{width:100%;accent-color:#2dd4bf;height:4px}
+
+/* ===== 天气 ===== */
+.wxcards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.wx{background:rgba(10,22,42,.6);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center;font-size:11.5px;color:var(--sub)}
+.wx .e{font-size:19px;display:block;margin:2px 0}
+.wx b{color:#e2f3ff;font-size:12.5px}
+
+/* ===== 告警列表 ===== */
+.alrow{display:flex;gap:10px;padding:8px 10px;border-bottom:1px dashed rgba(72,140,255,.1);font-size:12.5px;align-items:flex-start}
+.alrow:hover{background:rgba(56,132,255,.05)}
+.alrow .tm{color:var(--dim);font-family:Consolas;font-size:11.5px;flex-shrink:0;width:52px}
+.alrow .tx{flex:1;min-width:0}
+.alrow .tx b{color:#e2f3ff;font-weight:600}
+.filters{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.fbtn{font-size:11.5px;padding:3px 12px;border-radius:12px;border:1px solid var(--line);color:var(--sub);cursor:pointer}
+.fbtn.on{color:#5eead4;border-color:rgba(45,212,191,.5);background:rgba(45,212,191,.1)}
+
+/* ===== 项目架构 ===== */
+.arch-layer{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1px solid var(--line);border-radius:11px;background:rgba(10,22,42,.55);margin-bottom:10px}
+.arch-layer .lv{width:96px;flex-shrink:0;text-align:center}
+.arch-layer .lv b{display:block;font-size:15px;color:#e2f3ff}
+.arch-layer .lv span{font-size:10.5px;color:var(--dim)}
+.arch-layer .body{flex:1;font-size:12.5px;color:#c9d8ec;line-height:1.9}
+.arch-layer .body b{color:#7dd3fc}
+.arch-flow{text-align:center;color:#2c4a73;font-size:12px;line-height:1.4;margin:2px 0 10px}
+.arch-flow b{color:#5eead4;font-size:11px}
+.tag-list{display:flex;flex-wrap:wrap;gap:7px}
+.tag{font-size:11.5px;background:rgba(56,132,255,.12);border:1px solid rgba(56,132,255,.28);color:#7dd3fc;border-radius:7px;padding:2px 10px}
+.prio{display:flex;gap:10px;flex-wrap:wrap}
+.prio .pi{flex:1;min-width:150px;background:rgba(10,22,42,.55);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px}
+.prio .pi b{color:#7dd3fc;display:block;margin-bottom:3px;font-size:12.5px}
+.prio .pi .rnk{float:right;font-family:Consolas;color:#fbbf24;font-weight:700}
+
+/* ===== 弹窗 ===== */
+#modal{position:fixed;inset:0;background:rgba(4,10,20,.7);backdrop-filter:blur(3px);z-index:100;display:none;align-items:center;justify-content:center}
+#modal.show{display:flex}
+#modalBox{width:430px;max-width:92vw;background:linear-gradient(165deg,#13253f,#0d1a2f);border:1px solid rgba(72,140,255,.35);border-radius:14px;padding:20px 22px;box-shadow:0 18px 60px rgba(0,0,0,.5);animation:fadeIn .2s}
+#modalBox h4{color:#9fd8ff;font-size:15px;margin-bottom:10px}
+#modalBody{font-size:13px;color:#c9d8ec;max-height:52vh;overflow-y:auto}
+#modalBtns{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+
+/* ===== 工单表单 ===== */
+.inline-form{display:none;background:rgba(10,22,42,.55);border:1px dashed rgba(45,212,191,.4);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.inline-form.show{display:block}
+.inline-form select,.inline-form input{background:#0c1a30;border:1px solid var(--line);color:#dbe7f5;border-radius:8px;padding:6px 10px;font-size:12.5px;font-family:inherit;width:100%}
+.inline-form .fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+
+@media (max-width:1400px){.g6{grid-template-columns:repeat(3,1fr)}.lvgrid{grid-template-columns:repeat(2,1fr)}.panorama{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ============ 侧边栏 ============ -->
+<aside id="side">
+  <div class="logo">
+    <b>💧 兰生大厦 <em style="color:#5eead4;font-style:normal">AI</em> 智慧水务</b>
+    <small>AI-POWERED WATER O&amp;M AGENT</small>
+  </div>
+  <nav id="nav"></nav>
+  <div class="foot">
+    <span class="dot-ok"></span>物联网关在线 57/58 · 数据链路正常<br>
+    边缘节点 B3F机房 · 平台 v2.2.0
+  </div>
+</aside>
+
+<!-- ============ 顶栏 ============ -->
+<header id="topbar">
+  <h1>AI赋能智慧水务运维系统 <em>· 兰生大厦</em></h1>
+  <span class="stageBadge" id="stageBadge">M2 闭环控制阶段（进行中）</span>
+  <div id="tbRight">
+    <span class="wxchip" id="wxChip">🌤 19℃ 晴转多云 · 湿度62%</span>
+    <span id="clock">--:--:--</span>
+    <span class="dim small" id="dateStr"></span>
+    <div id="bell" title="告警通知">🔔<span id="bellCnt">0</span></div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============ 1 总览驾驶舱 ============ -->
+<section class="page on" id="page-dashboard">
+  <div class="disaster" id="disasterBanner">
+    <span class="lv">🌀</span>
+    <div><b id="disTitle">台风"海葵"逼近 · 暴雨红色预警</b><div class="small" id="disSub">市气象台发布暴雨橙色→红色预警，智能体已启动内涝应急预案</div></div>
+    <span style="margin-left:auto" class="bg b-dgr" id="disLevel">特大暴雨</span>
+  </div>
+
+  <div class="row g6" id="kpis"></div>
+
+  <div class="panel" style="margin-bottom:14px">
+    <h3>🌐 实时全景态势 <span class="dim small">给水 · 排水 · 内涝 全链路实时联动（秒级刷新）</span></h3>
+    <div class="panorama" id="panorama"></div>
+  </div>
+
+  <div class="row" style="grid-template-columns:2fr 1fr">
+    <div class="panel">
+      <h3>📈 24小时用水负荷与AI预测 <span class="more" onclick="go('ai')">进入AI决策中心 →</span></h3>
+      <svg id="chUsage" class="chart" style="height:225px"></svg>
+    </div>
+    <div class="panel">
+      <h3>🌧️ 气象联动 · 天气预报融合</h3>
+      <div class="wxcards" id="wxCards"></div>
+      <div class="small dim" style="margin-top:10px" id="wxNote">AI将未来48h降雨预报纳入阈值模型：雨前预排集水井、动态下调集水井启动液位、上调生活水箱储备水位。</div>
+    </div>
+  </div>
+
+  <div class="row" style="grid-template-columns:1.35fr 1fr 1fr">
+    <div class="panel">
+      <h3>🚰 水箱 · 集水井实时液位 <span class="more" onclick="go('twin')">数字孪生 →</span></h3>
+      <div class="lvgrid" id="levelGrid"></div>
+    </div>
+    <div class="panel">
+      <h3>🤖 智能体运行状态</h3>
+      <div id="agentStatus"></div>
+    </div>
+    <div class="panel">
+      <h3>🔔 最新告警 <span class="more" onclick="go('alerts')">全部 →</span></h3>
+      <div id="dashAlarms" style="max-height:238px;overflow-y:auto"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 实时监测 ============ -->
+<section class="page" id="page-monitor">
+  <div class="row" style="grid-template-columns:1.35fr 1fr">
+    <div class="panel">
+      <h3>📡 传感器总览 <span class="dim small">（接入点位58个，下表为重点点位）</span></h3>
+      <input id="senFilter" placeholder="🔍 搜索点位 / 位置 / 类型…" style="width:260px;background:#0c1a30;border:1px solid var(--line);color:#dbe7f5;border-radius:8px;padding:5px 10px;font-size:12px;margin-bottom:8px">
+      <div style="max-height:420px;overflow-y:auto" id="senTable"></div>
+    </div>
+    <div class="panel">
+      <h3>📈 点位实时曲线</h3>
+      <div id="selInfo" class="small" style="margin-bottom:6px"></div>
+      <svg id="chSensor" class="chart" style="height:250px"></svg>
+      <div id="senMeta" class="small dim" style="margin-top:8px"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>🛢️ 全部液位点趋势对比 <span class="dim small">（最近20分钟 · 每2秒采样）</span></h3>
+    <svg id="chLevels" class="chart" style="height:255px"></svg>
+  </div>
+</section>
+
+<!-- ============ 3 数字孪生 ============ -->
+<section class="page" id="page-twin">
+  <div class="panel" style="margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <b style="color:#9fd8ff;font-size:13.5px">图层：</b>
+    <span class="fbtn on" data-mode="all" onclick="setMode('all',this)">全部系统</span>
+    <span class="fbtn" data-mode="life" onclick="setMode('life',this)">生活给水</span>
+    <span class="fbtn" data-mode="fire" onclick="setMode('fire',this)">消防水</span>
+    <span class="fbtn" data-mode="drain" onclick="setMode('drain',this)">排水系统</span>
+    <span style="flex:1"></span>
+    <span class="small dim">💧 点击任意设备查看实时数据 · 水泵运行时管线显示流动动画 · <b style="color:#5eead4">B3F生活水箱</b>为首期M1验证场景</span>
+  </div>
+  <div class="twin-wrap">
+    <div class="panel" id="twinBox">
+      <svg id="twin" viewBox="0 0 1080 800"></svg>
+    </div>
+    <div>
+      <div class="panel eqd" id="eqDetail">
+        <h3>🔍 设备详情</h3>
+        <div class="dim small">点击左侧剖面图中任一设备（水箱 / 集水井 / 水泵），查看实时数据、动态阈值与关联传感器，并可下发手动控制指令。</div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h3>📋 系统图例</h3>
+        <div class="small" style="line-height:2.1;color:var(--sub)">
+          <span style="color:#38bdf8">━</span> 生活给水管线　<span style="color:#f87171">━</span> 消防管线　<span style="color:#a3e635">━</span> 排水管线<br>
+          <span style="color:#5eead4">▣</span> 水箱/水池　<span style="color:#fbbf24">◉</span> 水泵　<span style="color:#94a3b8">▣</span> 集水井<br>
+          <span style="color:#f87171">▨</span> 内涝积水点（暴雨时出现）　动态阈值：随天气与负荷自动调整
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4 AI决策中心 ============ -->
+<section class="page" id="page-ai">
+  <div class="row g4" id="aiCards"></div>
+  <div class="row" style="grid-template-columns:1.6fr 1fr">
+    <div class="panel">
+      <h3>🧠 B3F生活水箱 · 液位预测与动态阈值带 <span class="dim small">（未来12小时推演）</span></h3>
+      <svg id="chThresh" class="chart" style="height:255px"></svg>
+      <div class="small dim" style="margin-top:6px">蓝色实线：当前实测液位｜紫色虚线：LSTM+规则引擎融合预测｜绿色区间：AI动态阈值带（随天气/负荷逐时调整）。液位触及阈值带边界即触发决策。</div>
+    </div>
+    <div class="panel">
+      <h3>🌦️ 未来48h气象预报（接入点）</h3>
+      <div class="wxcards" id="aiWxCards"></div>
+      <div class="panel" style="margin-top:12px;background:rgba(10,22,42,.55)">
+        <h3 style="font-size:13px">⚙️ 阈值模型参数（可调）</h3>
+        <div class="sl"><label><span>高位阈值基准</span><b id="vThrHigh">85%</b></label><input type="range" id="thrHigh" min="78" max="92" value="85"></div>
+        <div class="sl"><label><span>低位阈值基准</span><b id="vThrLow">45%</b></label><input type="range" id="thrLow" min="30" max="52" value="45"></div>
+        <div class="sl"><label><span>降雨修正系数</span><b id="vThrRain">1.20</b></label><input type="range" id="thrRain" min="0" max="20" value="12"></div>
+        <div class="small dim">调整参数将实时作用于仿真引擎与数字孪生，观察液位曲线与告警行为的变化。</div>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="grid-template-columns:1.6fr 1fr">
+    <div class="panel">
+      <h3>📜 AI决策日志 <button class="btn sm ghost" style="margin-left:auto" onclick="exportLog()">⬇ 导出日志</button></h3>
+      <div class="logbox" id="aiLog" style="height:215px"></div>
+    </div>
+    <div class="panel">
+      <h3>🔬 阈值模型说明</h3>
+      <div class="small" style="line-height:2;color:#c9d8ec">
+        <p>· <b style="color:#c4b5fd">模型架构</b>：LSTM时序预测（未来4h用水负荷）+ 规则引擎（安全约束兜底）双通道融合。</p>
+        <p>· <b style="color:#c4b5fd">特征输入</b>：历史用水、时段/工作日特征、气象预报（降雨/温度/台风）、水位变化速率。</p>
+        <p>· <b style="color:#c4b5fd">训练数据</b>：M1阶段已积累 <b id="dataDays">42</b> 天秒级历史数据集，模型处于持续学习状态。</p>
+        <p>· <b style="color:#c4b5fd">内涝扩展</b>：暴雨/台风时启用内涝预测模块，联动积水点趋势与集水井余量评估。</p>
+        <p>· <b style="color:#6ee7b7">今日优化</b>：阈值策略已自动微调 <b id="optCnt">3</b> 次，预测MAPE <b>4.2%</b>。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 智能体中枢 ============ -->
+<section class="page" id="page-agent">
+  <div class="panel" style="margin-bottom:14px">
+    <h3>🔄 全链路闭环 · 感知—预测—决策—执行—反馈—优化
+      <span class="dim small" style="margin-left:auto;font-weight:400" id="loopHint">待机中：持续感知监测…</span></h3>
+    <div class="pipe" id="pipeline"></div>
+    <div id="taskPanel"></div>
+  </div>
+  <div class="row" style="grid-template-columns:2fr 1fr">
+    <div class="panel">
+      <h3>🧾 事件流（实时） <span class="more" onclick="exportLog()">⬇ 导出</span></h3>
+      <div class="logbox" id="agentLog" style="height:300px"></div>
+    </div>
+    <div>
+      <div class="panel">
+        <h3>🎛️ 演示控制台</h3>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <button class="btn dgr" onclick="simTyphoon()">🌀 模拟「台风·特大暴雨」内涝灾害</button>
+          <button class="btn warn" onclick="simRain()">🌧️ 模拟「降雨预警」驱动排水优先级调整</button>
+          <button class="btn warn" onclick="simHigh()">🛢️ 注入 B3F生活水箱「高位溢水风险」事件</button>
+          <button class="btn dgr" onclick="simPumpFault()">⚡ 注入「生活泵1号故障」事件（备泵自投）</button>
+          <button class="btn ghost" onclick="simReset()">↺ 复位全部模拟状态</button>
+        </div>
+        <div class="small dim" style="margin-top:10px">演示事件将完整走一遍六阶段闭环：感知 → 预测 → 决策 → 执行 → 反馈 → 优化，并联动数字孪生、告警、内涝风险与工单。</div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h3>📊 今日闭环统计</h3>
+        <div id="loopStats" class="small"></div>
+      </div>
+    </div>
+  </div>
+  <div class="row g6" id="agentCards"></div>
+</section>
+
+<!-- ============ 6 告警中心 ============ -->
+<section class="page" id="page-alerts">
+  <div class="row g4" id="alStats"></div>
+  <div class="panel">
+    <h3>🔔 告警记录</h3>
+    <div class="filters" id="alFilters">
+      <span class="fbtn on" data-f="all" onclick="setAlFilter('all',this)">全部</span>
+      <span class="fbtn" data-f="紧急" onclick="setAlFilter('紧急',this)">🔴 紧急</span>
+      <span class="fbtn" data-f="重要" onclick="setAlFilter('重要',this)">🟡 重要</span>
+      <span class="fbtn" data-f="提示" onclick="setAlFilter('提示',this)">🔵 提示</span>
+      <span class="fbtn" data-f="内涝" onclick="setAlFilter('内涝',this)">🌀 内涝</span>
+      <span class="fbtn" data-f="open" onclick="setAlFilter('open',this)">未恢复</span>
+    </div>
+    <div style="max-height:470px;overflow-y:auto" id="alTable"></div>
+  </div>
+</section>
+
+<!-- ============ 7 工单巡检 ============ -->
+<section class="page" id="page-orders">
+  <div class="row g4" id="odStats"></div>
+  <div class="row" style="grid-template-columns:1fr 1.7fr">
+    <div class="panel">
+      <h3>🚶 人工巡检 vs AI替代 <span class="dim small">（本月）</span></h3>
+      <svg id="chPatrol" class="chart" style="height:225px"></svg>
+      <div class="small dim" style="margin-top:8px">AI远程巡检（数据巡检）替代约53%现场巡检量，现场人员聚焦设备保养与隐患整改，对应成效指标「巡检减50%」。</div>
+    </div>
+    <div class="panel">
+      <h3>🛠️ 运维工单
+        <span style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn sm" onclick="toggleOrderForm()">＋ 新建工单</button>
+        </span>
+      </h3>
+      <div class="inline-form" id="orderForm">
+        <div class="fr">
+          <select id="ofPt"></select>
+          <select id="ofType"><option>设备维修</option><option>传感器校准</option><option>管道检漏</option><option>水质检测</option><option>保养巡检</option><option>内涝清疏</option></select>
+        </div>
+        <div class="fr"><input id="ofNote" placeholder="问题描述（可留空，自动生成）"></div>
+        <button class="btn sm" onclick="createOrder(true)">提交工单</button>
+      </div>
+      <div style="max-height:400px;overflow-y:auto" id="odTable"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>📅 智慧巡检计划</h3>
+    <div style="overflow-x:auto"><table class="tbl" id="patrolTbl"></table></div>
+  </div>
+</section>
+
+<!-- ============ 8 成效分析 ============ -->
+<section class="page" id="page-kpi">
+  <div class="row g5" id="kpiCards"></div>
+  <div class="row" style="grid-template-columns:1fr 1fr">
+    <div class="panel">
+      <h3>⏱️ 告警响应时长趋势 <span class="dim small">（目标 &lt;5min · 近30日）</span></h3>
+      <svg id="chResp" class="chart" style="height:240px"></svg>
+    </div>
+    <div class="panel">
+      <h3>💧 用水量月度对比 <span class="dim small">（AI调控节水成效）</span></h3>
+      <svg id="chWater" class="chart" style="height:240px"></svg>
+    </div>
+  </div>
+  <div class="row" style="grid-template-columns:1fr 1fr">
+    <div class="panel">
+      <h3>🌧️ 内涝事件处置统计 <span class="dim small">（近30日）</span></h3>
+      <svg id="chFlood" class="chart" style="height:220px"></svg>
+    </div>
+    <div class="panel">
+      <h3>🎯 成效指标达成一览（对照立项承诺）</h3>
+      <div style="max-height:220px;overflow-y:auto"><table class="tbl" id="kpiTbl"></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9 项目架构 ============ -->
+<section class="page" id="page-architecture">
+  <div class="panel">
+    <h3>🏗️ 架构总览 · 从「被动响应」到「主动预防」</h3>
+    <p class="small dim" style="line-height:2;margin-bottom:12px">以<b style="color:#5eead4">「端—边—云—数字孪生」四层技术架构</b>为骨架、以<b style="color:#5eead4">「感知—预测—决策—执行—反馈—优化」六阶段 Agent 闭环</b>为大脑，构建大厦补排水与内涝联防一体化的智慧水务运维体系，实现秒级感知、分钟级闭环。</p>
+    <div class="row g3" style="margin:0">
+      <div class="panel" style="background:rgba(10,22,42,.55)"><h3 style="font-size:13px">🎯 主动预防</h3><p class="small dim" style="margin:0">AI 融合历史用水与气象/台风预报动态调控阈值，事前预排、事中联控、事后复盘，替代固定浮球阀。</p></div>
+      <div class="panel" style="background:rgba(10,22,42,.55)"><h3 style="font-size:13px">🔁 闭环自愈</h3><p class="small dim" style="margin:0">异常从感知到处置全自动闭环，响应 &lt;5min、巡检减 50%，实现零溢水、零倒灌。</p></div>
+      <div class="panel" style="background:rgba(10,22,42,.55)"><h3 style="font-size:13px">🧪 单点→全场景</h3><p class="small dim" style="margin:0">首期以 B3F 生活水箱跑通闭环，验证后再横向扩展至全楼水箱、集水井与内涝联防。</p></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>🧱 四层技术架构与数据流</h3>
+    <div class="arch-layer" style="border-color:rgba(45,212,191,.35)">
+      <div class="lv"><b>可视化层</b><span>数字孪生</span></div>
+      <div class="body">楼宇级<b>数字孪生</b>：实时状态映射、异常点位一键定位、历史回溯与仿真推演；对接<b>移动端告警推送</b>与远程控制（规划中）。</div>
+    </div>
+    <div class="arch-flow">▲ 指令下行（调控/阀门/水泵）　▼ 数据上行（状态/告警/趋势）<br><b>数字孪生 ⇄ 云端决策引擎</b></div>
+    <div class="arch-layer" style="border-color:rgba(167,139,250,.35)">
+      <div class="lv"><b>云端 · 决策层</b><span>AI Agent</span></div>
+      <div class="body"><b>动态阈值预测决策引擎</b>：LSTM 负荷预测 + 规则引擎兜底；六阶段 Agent 编排；融合<b>气象/台风预报</b>与历史用水；暴雨/台风自动触发<b>内涝应急预案</b>。</div>
+    </div>
+    <div class="arch-flow">▼ 数据上行（秒级采集）　▲ 指令下行（本地联动兜底）<br><b>边缘网关 ⇄ 云端</b></div>
+    <div class="arch-layer" style="border-color:rgba(56,132,255,.35)">
+      <div class="lv"><b>边缘层</b><span>B3F 网关</span></div>
+      <div class="body"><b>边缘网关</b>：多协议解析（Modbus/LoRa/4G）、本地缓存与断点续传、<b>断网本地联动兜底</b>（云端断开仍可自动启停泵，保障安全）。</div>
+    </div>
+    <div class="arch-flow">▲ 数据上行（液位/压力/流量/水浸）　▼ 采集指令下行<br><b>感知终端 ⇄ 边缘网关</b></div>
+    <div class="arch-layer" style="border-color:rgba(52,211,153,.35)">
+      <div class="lv"><b>端 · 感知层</b><span>58 点位</span></div>
+      <div class="body">液位计 / 压力变送器 / 电磁流量计 / 水浸传感器 / 电动阀门<b>秒级采集</b>；新增<b>内涝积水点监测</b>（车库坡道口、低洼道路、泵房周边）。</div>
+    </div>
+  </div>
+
+  <div class="row" style="grid-template-columns:1fr 1fr">
+    <div class="panel">
+      <h3>🧠 六阶段 Agent 闭环</h3>
+      <p class="small dim" style="line-height:2;margin-bottom:10px">事件驱动的智能体编排管线，每个环节由独立 Agent 承担，环节间以结果回读校验衔接，异常可自动回滚或升级告警。运行过程详见「智能体中枢」页。</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="tag">📡 感知</span><span class="tag">🔮 预测</span><span class="tag">🧭 决策</span><span class="tag">⚙️ 执行</span><span class="tag">🪞 反馈</span><span class="tag">📈 优化</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>🧩 技术栈与团队</h3>
+      <div class="tag-list" style="margin-bottom:12px">
+        <span class="tag">IoT 传感</span><span class="tag">LoRa/4G</span><span class="tag">MQTT</span><span class="tag">边缘计算</span><span class="tag">LSTM 时序预测</span><span class="tag">规则引擎</span><span class="tag">数字孪生 SVG/BIM</span><span class="tag">Agent 编排</span>
+      </div>
+      <p class="small dim" style="line-height:2">跨部门团队 <b style="color:#7dd3fc">8 人</b>：工程运维 3 · 自控/IoT 2 · AI/算法 2 · 平台开发 1。四层架构职责清晰、端边云端协同。</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>⚙️ 补排水调度优先级策略</h3>
+    <div class="prio">
+      <div class="pi"><b>P0 · 消防保障 <span class="rnk">最高</span></b>消防水箱/水池常高位保持，任何情况下不得低于安全下限，消防泵优先。</div>
+      <div class="pi"><b>P1 · 内涝/倒灌防护</b>暴雨台风时集水井排水、应急潜水泵、积水点抽排为第一优先级。</div>
+      <div class="pi"><b>P2 · 生活供水保障</b>屋顶生活水箱低于低位阈值时启动转输泵补水。</div>
+      <div class="pi"><b>P3 · 节能优化</b>错峰补水、错峰排水，避开电价峰段，降低泵组电耗。</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>🗺️ 落地里程碑映射（架构 → 里程碑 → 现状）</h3>
+    <table class="tbl">
+      <tr><th>阶段</th><th>架构落点</th><th>关键动作</th><th>状态</th></tr>
+      <tr><td>M1 · 单点验证</td><td>端 + 边</td><td>B3F生活水箱传感器部署、数据接入、历史数据集积累（42天）</td><td><span class="bg b-ok">已完成</span></td></tr>
+      <tr><td>M2 · 闭环控制</td><td>云 + 孪生</td><td>动态阈值调控、自动补水/排水、数字孪生可视化、成效统计</td><td><span class="bg b-info">进行中 68%</span></td></tr>
+      <tr><td>M3 · 全楼推广</td><td>四层全场景</td><td>全场景联控、内涝联防、智慧楼宇运维标准复制</td><td><span class="bg b-warn">待启动</span></td></tr>
+    </table>
+    <div class="small dim" style="margin-top:10px">等级跃迁方向：<b style="color:#7dd3fc">★★★★ 领域平台</b>（全场景联控 + 降雨预警驱动排水优先级 + 历史回溯/仿真推演 + 移动端推送）；<b style="color:#a78bfa">★★★★★ 产品化</b>（能耗优化 + 数据资产沉淀 + 集团楼宇方案输出）。</div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ 弹窗 ============ -->
+<div id="modal">
+  <div id="modalBox">
+    <h4 id="modalTitle">确认操作</h4>
+    <div id="modalBody"></div>
+    <div id="modalBtns">
+      <button class="btn ghost" id="modalCancel">取消</button>
+      <button class="btn" id="modalOk">确认下发</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ================= 核心状态与数据模型 ================= */
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const fmtT=d=>d.toTimeString().slice(0,8);
+const fmtHM=d=>d.toTimeString().slice(0,5);
+let now=new Date(), tickN=0, seq=100;
+
+const NAV=[
+  {id:'dashboard',ic:'🛰️',nm:'总览驾驶舱'},
+  {id:'twin',ic:'🏙️',nm:'数字孪生'},
+  {id:'monitor',ic:'📡',nm:'实时监测'},
+  {id:'ai',ic:'🧠',nm:'AI决策中心'},
+  {id:'agent',ic:'🤖',nm:'智能体中枢'},
+  {id:'alerts',ic:'🔔',nm:'告警中心'},
+  {id:'orders',ic:'🛠️',nm:'工单巡检'},
+  {id:'kpi',ic:'📊',nm:'成效分析'},
+  {id:'architecture',ic:'🏗️',nm:'项目架构'},
+];
+
+/* 设备台账 */
+const EQ={
+  roofA:{id:'roofA',name:'屋顶生活水箱A',kind:'tank',sys:'living',loc:'39F 屋顶层',cap:30,capTxt:'30 m³',lvl:74,min:40,max:88,tw:{x:170,y:40,w:62,h:38}},
+  roofB:{id:'roofB',name:'屋顶生活水箱B',kind:'tank',sys:'living',loc:'39F 屋顶层',cap:30,capTxt:'30 m³',lvl:71,min:40,max:88,tw:{x:242,y:40,w:62,h:38}},
+  roofFire:{id:'roofFire',name:'屋顶消防水箱',kind:'tank',sys:'fire',loc:'39F 屋顶层',cap:18,capTxt:'18 m³',lvl:93,min:88,max:100,tw:{x:314,y:40,w:62,h:38}},
+  b3living:{id:'b3living',name:'B3F生活水箱',kind:'tank',sys:'living',loc:'B3F 设备层（M1验证场景）',cap:50,capTxt:'50 m³',lvl:64,min:45,max:82,star:1,tw:{x:140,y:668,w:110,h:44}},
+  b1pool:{id:'b1pool',name:'B1F生活水池',kind:'tank',sys:'living',loc:'B1F 生活泵房',cap:80,capTxt:'80 m³',lvl:70,min:45,max:86,tw:{x:140,y:532,w:110,h:40}},
+  firepool:{id:'firepool',name:'B2F消防水池',kind:'tank',sys:'fire',loc:'B2F 消防泵房',cap:500,capTxt:'500 m³',lvl:96,min:90,max:100,tw:{x:270,y:600,w:140,h:44}},
+  pit1:{id:'pit1',name:'B3F集水井①',kind:'pit',sys:'drain',loc:'B3F 车库西',lvl:38,drainOn:false,tw:{x:400,y:668,w:48,h:44}},
+  pit2:{id:'pit2',name:'B3F集水井②',kind:'pit',sys:'drain',loc:'B3F 车库东',lvl:33,drainOn:false,tw:{x:470,y:668,w:48,h:44}},
+  pit3:{id:'pit3',name:'B3F集水井③（机房）',kind:'pit',sys:'drain',loc:'B3F 水泵房',lvl:41,drainOn:false,tw:{x:540,y:668,w:48,h:44}},
+  pit4:{id:'pit4',name:'B3F集水井④（电梯基坑）',kind:'pit',sys:'drain',loc:'B3F 电梯基坑',lvl:29,drainOn:false,tw:{x:610,y:668,w:48,h:44}},
+  pumpL1:{id:'pumpL1',name:'生活水泵1号',kind:'pump',sys:'living',loc:'B1F 生活泵房',run:true,ref:'b3living'},
+  pumpL2:{id:'pumpL2',name:'生活水泵2号',kind:'pump',sys:'living',loc:'B1F 生活泵房',run:false,ref:'b3living'},
+  pumpL3:{id:'pumpL3',name:'生活水泵3号（备用）',kind:'pump',sys:'living',loc:'B1F 生活泵房',run:false,ref:'b3living'},
+  pumpF1:{id:'pumpF1',name:'消防泵1号',kind:'pump',sys:'fire',loc:'B2F 消防泵房',run:false,ref:'firepool'},
+  pumpF2:{id:'pumpF2',name:'消防泵2号（备用）',kind:'pump',sys:'fire',loc:'B2F 消防泵房',run:false,ref:'firepool'},
+  pumpD1:{id:'pumpD1',name:'排污泵①',kind:'pump',sys:'drain',loc:'B3F 车库西',run:false,ref:'pit1'},
+  pumpD2:{id:'pumpD2',name:'排污泵②',kind:'pump',sys:'drain',loc:'B3F 车库东',run:false,ref:'pit2'},
+  pumpD3:{id:'pumpD3',name:'排污泵③',kind:'pump',sys:'drain',loc:'B3F 水泵房',run:false,ref:'pit3'},
+  pumpD4:{id:'pumpD4',name:'排污泵④',kind:'pump',sys:'drain',loc:'B3F 电梯基坑',run:false,ref:'pit4'},
+};
+const TANKS=['roofA','roofB','roofFire','b3living','b1pool','firepool'];
+const PITS=['pit1','pit2','pit3','pit4'];
+const PUMPS=['pumpL1','pumpL2','pumpL3','pumpF1','pumpF2','pumpD1','pumpD2','pumpD3','pumpD4'];
+
+/* 内涝积水监测点（暴雨/台风时产生积水） */
+const FLOOD=[
+  {id:'f1',name:'B1F车库坡道口',loc:'地下车库入口',depth:0,cap:40,tw:{x:24,y:520,w:84,h:26}},
+  {id:'f2',name:'大厦西侧低洼道路',loc:'室外道路',depth:0,cap:30,tw:{x:24,y:110,w:84,h:26}},
+  {id:'f3',name:'B2F泵房周边',loc:'地下二层',depth:0,cap:25,tw:{x:782,y:610,w:92,h:26}},
+];
+
+/* 暴雨/台风等级 */
+const STORM_LVL=['无雨','小雨','中雨','大雨','暴雨','大暴雨(台风)','特大暴雨(台风)'];
+const STORM_EMOJI=['☀️','🌦️','🌧️','🌧️','⛈️','🌀','🌀'];
+
+/* 传感器 */
+const SENSORS=[];
+TANKS.concat(PITS).forEach((k,i)=>SENSORS.push({id:'LL-'+(101+i),eq:k,eqName:EQ[k].name,type:'液位计',unit:'%',get:()=>EQ[k].lvl.toFixed(1),st:()=>EQ[k].lvl>EQ[k].max-1||EQ[k].lvl<EQ[k].min+1?'告警':'在线'}));
+SENSORS.push(
+ {id:'PT-01',eqName:'生活供水总管',type:'压力变送器',unit:'MPa',get:()=>(0.42+Math.sin(tickN/18)*0.02+rnd(-.005,.005)).toFixed(3),st:()=>'在线'},
+ {id:'PT-02',eqName:'B3F转输管',type:'压力变送器',unit:'MPa',get:()=>'——',st:()=>'离线'},
+ {id:'PT-03',eqName:'消防稳压管',type:'压力变送器',unit:'MPa',get:()=>(0.75+rnd(-.01,.01)).toFixed(3),st:()=>'在线'},
+ {id:'FT-01',eqName:'生活水总管',type:'电磁流量计',unit:'m³/h',get:()=>curFlow.toFixed(1),st:()=>'在线'},
+ {id:'FT-02',eqName:'排水总管',type:'电磁流量计',unit:'m³/h',get:()=>drainFlow.toFixed(1),st:()=>'在线'},
+ {id:'FT-03',eqName:'市政进水',type:'电磁流量计',unit:'m³/h',get:()=>(curFlow*0.6).toFixed(1),st:()=>'在线'},
+ {id:'SW-01',eqName:'B3F泵房地面',type:'水浸传感器',unit:'—',get:()=>'干燥',st:()=>'在线'},
+ {id:'SW-02',eqName:'B2F泵房地面',type:'水浸传感器',unit:'—',get:()=>'干燥',st:()=>'在线'},
+ {id:'SW-03',eqName:'B3F集水井③周边',type:'水浸传感器',unit:'—',get:()=>'干燥',st:()=>'在线'},
+ {id:'FL-01',eqName:'B1F车库坡道口',type:'积水液位计',unit:'cm',get:()=>FLOOD[0].depth.toFixed(0),st:()=>FLOOD[0].depth>5?'告警':'在线'},
+ {id:'FL-02',eqName:'大厦西侧低洼道路',type:'积水液位计',unit:'cm',get:()=>FLOOD[1].depth.toFixed(0),st:()=>FLOOD[1].depth>5?'告警':'在线'},
+ {id:'FL-03',eqName:'B2F泵房周边',type:'积水液位计',unit:'cm',get:()=>FLOOD[2].depth.toFixed(0),st:()=>FLOOD[2].depth>5?'告警':'在线'},
+ {id:'VB-01',eqName:'B3F生活水箱电动进水阀',type:'电动阀门',unit:'—',get:()=>S.valveB3?'开启':'关闭',st:()=>'在线'},
+ {id:'FM-01',eqName:'水质余氯（B3F出水）',type:'水质仪',unit:'mg/L',get:()=>(0.52+rnd(-.03,.03)).toFixed(2),st:()=>'在线'},
+);
+
+/* 全局运行状态 */
+const S={
+  storm:0, stormUntil:0, typhoon:false, pumpFault:null, pumpFaultUntil:0, valveB3:false,
+  alarms:[], orders:[], alFilter:'all',
+  respSecs:[], loopDone:0, loopAuto:0, loopClosed:0, alarmSeq:0, woSeq:0,
+  agentBusy:false, forceIn:0, forceOut:0, selEq:null, selSensor:'LL-103',
+  logAll:[], optCnt:3, dataDays:42, floodEvents:0, stormActive:false,
+  thrHigh:85, thrLow:45, thrRain:1.2,
+};
+let curFlow=12.6, drainFlow=3.2;
+const buf={levels:{},flow:[],press:[],flood:[[],[],[]]};
+TANKS.concat(PITS).forEach(k=>buf.levels[k]=[]);
+
+function dynMax(k){
+  const e=EQ[k];
+  if(e.kind==='pit') return S.storm>0? 55+5*S.thrRain : 70;
+  let base=S.thrHigh;
+  if(S.storm>0) base-=2*S.storm;
+  const h=now.getHours();
+  if(h>=11&&h<=13) base+=1.5;
+  return Math.min(base+(e.sys==='fire'?15:0),e.sys==='fire'?100:92);
+}
+function dynMin(k){
+  const e=EQ[k];
+  if(e.kind==='pit') return 30;
+  let base=S.thrLow;
+  if(S.storm>0) base+=3;
+  return Math.min(base+(e.sys==='fire'?43:0),e.sys==='fire'?88:60);
+}
+/* 内涝风险等级 0-100 */
+function floodRisk(){
+  const avg=PITS.reduce((s,k)=>s+EQ[k].lvl,0)/PITS.length;
+  const maxF=Math.max(...FLOOD.map(f=>f.depth));
+  let sc=S.storm*10 + (avg>80?25:avg>65?15:avg>50?8:0) + (maxF>30?30:maxF>20?18:maxF>8?8:maxF>2?3:0);
+  sc=clamp(Math.round(sc),0,100);
+  let lvl,color;
+  if(sc<15){lvl='低';color='#34d399';} else if(sc<35){lvl='中';color='#38bdf8';} else if(sc<55){lvl='较高';color='#fbbf24';} else if(sc<75){lvl='高';color='#fb923c';} else {lvl='极高';color='#ef4444';}
+  return {score:sc,lvl,color};
+}
+
+/* ================= 导航 / 顶栏 / 时钟 ================= */
+let curPage='dashboard';
+function go(id){
+  curPage=id;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  $('page-'+id).classList.add('on');
+  document.querySelectorAll('#nav .ni').forEach(n=>n.classList.toggle('on',n.dataset.id===id));
+  if(id==='twin') drawTwin();
+  if(id==='monitor') drawMonitor();
+  if(id==='ai') drawAI();
+  if(id==='kpi') drawKPI();
+  if(id==='orders') drawOrders();
+  if(id==='alerts') drawAlerts();
+}
+(function buildNav(){
+  $('nav').innerHTML=NAV.map(n=>`<div class="ni${n.id==='dashboard'?' on':''}" data-id="${n.id}" onclick="go('${n.id}')"><span class="ic">${n.ic}</span>${n.nm}</div>`).join('');
+})();
+function tickClock(){
+  now=new Date();
+  $('clock').textContent=fmtT(now);
+  $('dateStr').textContent=now.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'});
+  const days=Math.floor((now-new Date(2026,5,1))/864e5);
+  $('stageBadge').textContent='M2 闭环控制阶段（第'+days+'天 · 进行中）';
+}
+
+/* ================= 日志 ================= */
+function log(tag,msg,lvl){
+  const t=fmtHM(now);
+  const e={t,tag,msg,lvl};
+  S.logAll.push(e); if(S.logAll.length>400)S.logAll.shift();
+  const html=`<div class="lg ${lvl||'info'}"><span class="t">${t}</span><span class="tag">${tag}</span><span class="m">${msg}</span></div>`;
+  const a=$('agentLog'); if(a){a.insertAdjacentHTML('afterbegin',html); if(a.children.length>150)a.lastChild.remove();}
+  const b=$('aiLog'); if(b){b.insertAdjacentHTML('afterbegin',html); if(b.children.length>120)b.lastChild.remove();}
+}
+function exportLog(){
+  const txt=S.logAll.slice().reverse().map(l=>`${l.t} [${l.tag}] ${l.msg}`).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([`兰生大厦智慧水务系统事件日志 ${fmtT(now)}\n\n`+txt],{type:'text/plain;charset=utf-8'}));
+  a.download='智慧水务事件日志_'+fmtT(now).replace(/:/g,'')+'.txt'; a.click();
+  log('导出','已导出事件日志文件','ok');
+}
+
+/* ================= 弹窗 ================= */
+let modalCb=null;
+function modal(title,body,okTxt,cb){
+  $('modalTitle').textContent=title; $('modalBody').innerHTML=body;
+  $('modalOk').textContent=okTxt||'确认下发';
+  modalCb=cb; $('modal').classList.add('show');
+}
+$('modalOk').onclick=()=>{$('modal').classList.remove('show'); modalCb&&modalCb();};
+$('modalCancel').onclick=()=>$('modal').classList.remove('show');
+
+/*JS1B*/
+/* ================= SVG 图表工具 ================= */
+function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function lineChart(id,series,opt){
+  opt=opt||{}; const svg=$(id); if(!svg)return; svg.innerHTML='';
+  const W=svg.clientWidth||640,H=parseFloat(svg.style.height)||220;
+  const pL=46,pR=12,pT=20,pB=24;
+  let mn=opt.min,mx=opt.max;
+  if(mn==null||mx==null){const all=series.flatMap(s=>s.data.filter(v=>isFinite(v)));if(mn==null)mn=Math.min(...all);if(mx==null)mx=Math.max(...all);}
+  if(mx-mn<2){mn-=2;mx+=2}
+  const pad=(mx-mn)*.14; mn-=pad; mx+=pad;
+  const X=(i,n)=>pL+(W-pL-pR)*(n<=1?1:i/(n-1));
+  const Y=v=>pT+(H-pT-pB)*(1-(v-mn)/(mx-mn));
+  for(let g=0;g<=4;g++){
+    const v=mn+(mx-mn)*g/4, y=Y(v);
+    mk('line',{x1:pL,x2:W-pR,y1:y,y2:y,stroke:'rgba(72,140,255,.12)','stroke-width':1},svg);
+    mk('text',{x:pL-6,y:y+4,'text-anchor':'end',fill:'#5c7492','font-size':'10','font-family':'Consolas'},svg).textContent=opt.fmt?opt.fmt(v):v.toFixed(opt.dec!=null?opt.dec:0);
+  }
+  if(opt.xlabels){
+    const step=Math.ceil(opt.xlabels.length/8);
+    opt.xlabels.forEach((lb,i)=>{if(i%step)return;mk('text',{x:X(i,opt.xlabels.length),y:H-6,'text-anchor':'middle',fill:'#5c7492','font-size':'10'},svg).textContent=lb;});
+  }
+  series.forEach(s=>{
+    const n=s.data.length; if(n<2)return;
+    let d=''; s.data.forEach((v,i)=>{if(!isFinite(v))return; d+=(d?' L':'M')+X(i,n).toFixed(1)+','+Y(v).toFixed(1);});
+    if(s.fill){const area=d+' L'+X(n-1,n).toFixed(1)+','+(H-pB)+' L'+X(0,n).toFixed(1)+','+(H-pB)+' Z'; mk('path',{d:area,fill:s.color,opacity:.13,stroke:'none'},svg);}
+    mk('path',{d,fill:'none',stroke:s.color,'stroke-width':s.w||2,opacity:s.op||1,'stroke-dasharray':s.dash||'none','stroke-linejoin':'round'},svg);
+  });
+  let lx=W-12;
+  series.slice().reverse().forEach(s=>{
+    const t=mk('text',{x:lx,y:12,'text-anchor':'end',fill:s.color,'font-size':'10.5'},svg); t.textContent='■ '+s.label; lx-=s.label.length*11+18;
+  });
+  if(opt.band){
+    const hi=opt.band[0],lo=opt.band[1],n=hi.length;
+    let d=''; for(let i=0;i<n;i++)d+=(i?' L':'M')+X(i,n).toFixed(1)+','+Y(hi[i]).toFixed(1);
+    for(let i=n-1;i>=0;i--)d+=' L'+X(i,n).toFixed(1)+','+Y(lo[i]).toFixed(1);
+    mk('path',{d:d+' Z',fill:'#2dd4bf',opacity:.1,stroke:'none'},svg);
+  }
+}
+function barChart(id,cats,series,opt){
+  opt=opt||{}; const svg=$(id); if(!svg)return; svg.innerHTML='';
+  const W=svg.clientWidth||640,H=parseFloat(svg.style.height)||220,pL=46,pR=10,pT=22,pB=24;
+  let mx=opt.max; if(mx==null)mx=Math.max(...series.flatMap(s=>s.data))*1.15;
+  const N=cats.length, gw=(W-pL-pR)/N, bw=Math.min(34,gw/(series.length+1));
+  for(let g=0;g<=4;g++){
+    const v=mx*g/4,y=pT+(H-pT-pB)*(1-g/4);
+    mk('line',{x1:pL,x2:W-pR,y1:y,y2:y,stroke:'rgba(72,140,255,.12)'},svg);
+    mk('text',{x:pL-6,y:y+4,'text-anchor':'end',fill:'#5c7492','font-size':'10','font-family':'Consolas'},svg).textContent=v.toFixed(0);
+  }
+  cats.forEach((c,i)=>{
+    series.forEach((s,si)=>{
+      const v=s.data[i],x=pL+gw*i+gw/2-(series.length*bw)/2+si*bw+2,h=(H-pT-pB)*v/mx,y=H-pB-h;
+      mk('rect',{x,y,width:bw-4,height:h,rx:3,fill:s.color,opacity:.9},svg);
+      mk('text',{x:x+(bw-4)/2,y:y-4,'text-anchor':'middle',fill:s.color,'font-size':'9.5','font-family':'Consolas'},svg).textContent=v;
+    });
+    mk('text',{x:pL+gw*i+gw/2,y:H-7,'text-anchor':'middle',fill:'#8fa8c7','font-size':'10.5'},svg).textContent=c;
+  });
+  let lx=W-12;
+  series.slice().reverse().forEach(s=>{const t=mk('text',{x:lx,y:12,'text-anchor':'end',fill:s.color,'font-size':'10.5'},svg);t.textContent='■ '+s.label;lx-=s.label.length*11+18;});
+}
+
+/* ================= 总览驾驶舱 ================= */
+function demand(h){return [.25,.22,.2,.2,.22,.32,.55,.85,1,1.06,1.12,.96,1.06,1.04,1,.99,1.02,1.05,1.1,.94,.74,.54,.42,.32][h];}
+const usage24=[],pred24=[];
+(function(){for(let h=0;h<24;h++){const b=demand(h)*38*(1+rnd(-.04,.04));usage24.push(+b.toFixed(1));pred24.push(+(demand(h)*38).toFixed(1));}})();
+function avgResp(){return S.respSecs.length?S.respSecs.reduce((a,b)=>a+b,0)/S.respSecs.length:186;}
+function respBadge(){const m=avgResp()/60;return m<5?'<span class="up">✔ 达标</span>':'<span class="bad">✘ 超标</span>';}
+const KPI_DEFS=[
+  {ic:'⏱️',lb:'告警平均响应',v:()=> (avgResp()/60).toFixed(1),unit:'min',tr:()=>'目标 <5min '+respBadge()},
+  {ic:'🚶',lb:'人工巡检减负',v:()=>'53',unit:'%',tr:()=>'目标 50% · 已达成',cls:'up'},
+  {ic:'🌀',lb:'溢水/内涝事件',v:()=>S.floodEvents+'',unit:'起',tr:()=>S.floodEvents?'内涝预案处置中':'连续安全运行 127 天',cls:S.floodEvents?'bad':'up'},
+  {ic:'📡',lb:'设备在线率',v:()=>'98.3',unit:'%',tr:()=>'57/58 点位在线',cls:'mid'},
+  {ic:'💧',lb:'本月节水率',v:()=>'+6.8',unit:'%',tr:()=>'泵组电耗 −11.2%',cls:'up'},
+  {ic:'🤖',lb:'今日自动闭环',v:()=>S.loopClosed,unit:'次',tr:()=>'自动执行率 '+(S.loopDone?Math.round(S.loopAuto/Math.max(S.loopDone,1)*100):100)+'%',cls:'up'},
+];
+function renderKPIs(){
+  $('kpis').innerHTML=KPI_DEFS.map(k=>`<div class="panel kpi"><span class="ic">${k.ic}</span><div class="lb">${k.lb}</div><div class="v">${k.v()}<small>${k.unit}</small></div><div class="tr ${k.cls||''}">${k.tr()}</div></div>`).join('');
+}
+function levelColor(e){
+  if(e.kind==='pit')return e.lvl>85?'dgr':e.lvl>dynMax(e.id)-5?'warn':'';
+  if(e.lvl>e.max-2)return 'dgr'; if(e.lvl<e.min+3)return 'warn';
+  return e.sys==='fire'?'fire':'';
+}
+function renderLevels(){
+  const keys=TANKS.concat(PITS);
+  $('levelGrid').innerHTML=keys.map(k=>{
+    const e=EQ[k],pct=Math.round(e.lvl);
+    const sub=e.kind==='pit'?(e.drainOn?'排污泵运行中':'静水位'):e.sys==='fire'?'消防常高位':'动态阈值 '+Math.round(dynMin(k))+'~'+Math.round(dynMax(k))+'%';
+    return `<div class="lvc" onclick="go('twin');setTimeout(()=>selectEq('${k}'),80)"><div class="nm"><span>${e.name}</span><span class="pc">${pct}%</span></div><div class="bar"><i class="${levelColor(e)}" style="width:${pct}%"></i></div><div class="small dim" style="margin-top:4px">${sub}</div></div>`;
+  }).join('');
+}
+const WX=[
+  {d:'今天',e:'🌦️',t:'小雨转中雨',hi:21,lo:17,rain:'70%'},
+  {d:'明天',e:'🌧️',t:'中到大雨',hi:19,lo:16,rain:'90%'},
+  {d:'后天',e:'⛅',t:'多云转阴',hi:22,lo:17,rain:'20%'},
+  {d:'周六',e:'☀️',t:'晴',hi:24,lo:18,rain:'0%'},
+];
+function renderWx(){
+  $('wxCards').innerHTML=WX.map(w=>`<div class="wx">${w.d}<span class="e">${w.e}</span><b>${w.hi}°/${w.lo}°</b><br>降水${w.rain}</div>`).join('');
+  $('aiWxCards').innerHTML=$('wxCards').innerHTML;
+}
+function renderAgentStatus(){
+  const st=[
+    ['感知 Agent','运行中','秒级采集 58 点位'],
+    ['预测 Agent','运行中','LSTM+规则 双通道'],
+    ['决策 Agent',S.storm>0?'🌀 内涝应急决策':'运行中',S.storm>0?'排水优先级最高':'动态阈值调控'],
+    ['执行 Agent',S.pumpFault?'⚠️ 备泵接管':'运行中',S.valveB3?'电动阀开启中':'待命'],
+    ['反馈 Agent','运行中','执行结果回读校验'],
+    ['优化 Agent','学习中','今日已微调阈值 '+S.optCnt+' 次'],
+  ];
+  $('agentStatus').innerHTML=st.map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed rgba(72,140,255,.12)"><span style="font-size:12.5px">${s[0]}</span><span class="bg ${s[1].includes('⚠')||s[1].includes('🌀')?'b-warn':'b-ok'}">${s[1]}</span></div><div class="small dim" style="margin:-2px 0 4px">${s[2]}</div>`).join('');
+}
+function alarmRow(a,short){
+  const cls=a.lvl==='紧急'?'b-dgr':a.lvl==='重要'?'b-warn':a.lvl==='内涝'?'b-dgr':'b-info';
+  const stc=a.status==='未处理'?'b-dgr':a.status==='处理中'?'b-warn':'b-ok';
+  return `<div class="alrow"><span class="tm">${a.time}</span><span class="bg ${cls}" style="width:36px;text-align:center;flex-shrink:0">${a.lvl}</span><div class="tx"><b>${a.src}</b> · ${a.msg}</div>${short?'':`<span class="bg ${stc}">${a.status}</span><span class="small dim" style="width:64px;text-align:right;flex-shrink:0">${a.resp!=(null)?(a.resp/60).toFixed(1)+'min':a.status==='处理中'?'…':''}</span>`}</div>`;
+}
+function renderDashAlarms(){
+  $('dashAlarms').innerHTML=S.alarms.slice(0,8).map(a=>alarmRow(a,true)).join('')||'<div class="dim small center" style="padding:30px 0">暂无告警，一切正常 ✅</div>';
+}
+/* 实时全景态势 */
+function renderPanorama(){
+  const risk=floodRisk();
+  const runningPumps=PUMPS.filter(p=>EQ[p].run).length;
+  const supply=`<div class="psub"><h4>🚰 给水链路</h4>
+    <div class="chain">
+      <div class="node"><span class="dot"></span>市政进水</div><span class="edge">→</span>
+      <div class="node ${EQ.b1pool.lvl>EQ.b1pool.max-2?'dgr':''}"><span class="dot"></span>生活水池 ${Math.round(EQ.b1pool.lvl)}%</div><span class="edge">→</span>
+      <div class="node run"><span class="dot"></span>生活泵组</div><span class="edge">→</span>
+      <div class="node"><span class="dot"></span>屋顶水箱 ${Math.round((EQ.roofA.lvl+EQ.roofB.lvl)/2)}%</div><span class="edge">→</span>
+      <div class="node"><span class="dot"></span>楼层供水</div>
+    </div>
+    <div class="floodstat"><span>供水压力</span><b style="color:#7dd3fc">0.42 MPa</b></div>
+    <div class="floodstat"><span>瞬时流量</span><b style="color:#7dd3fc">${curFlow.toFixed(1)} m³/h</b></div>
+    <div class="floodstat"><span>运行水泵</span><b style="color:#fbbf24">${runningPumps} 台</b></div>
+  </div>`;
+  const drain=`<div class="psub"><h4>🌊 排水与内涝</h4>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:4px">集水井水位</div>
+    ${PITS.map(k=>{const e=EQ[k];const pump=EQ['pumpD'+k.slice(-1)];return `<div class="floodline"><span class="nm">${e.name.replace('B3F','')}</span><div class="bar mini"><i class="${e.lvl>85?'dgr':e.lvl>dynMax(k)-5?'warn':''}" style="width:${Math.round(e.lvl)}%"></i></div><span class="pc">${Math.round(e.lvl)}%</span><span class="pump ${pump.run?'run':''}">${pump.run?'▶排水':'待机'}</span></div>`;}).join('')}
+    <div style="font-size:11px;color:var(--dim);margin:8px 0 4px">内涝积水点</div>
+    ${FLOOD.map(f=>{const p=Math.min(100,f.depth/f.cap*100);return `<div class="floodline"><span class="nm">${f.name}</span><div class="bar mini"><i class="${f.depth>25?'dgr':f.depth>10?'warn':''}" style="width:${p}%"></i></div><span class="pc ${f.depth>0?'bad':''}">${f.depth>0?f.depth.toFixed(0)+'cm':'干燥'}</span></div>`;}).join('')}
+  </div>`;
+  const riskBlock=`<div class="psub"><h4>⚠️ 内涝风险</h4>
+    <div class="gauge-wrap">
+      <div class="gauge" id="gaugeRing" style="background:conic-gradient(${risk.color} ${risk.score}%, #132741 0)"></div>
+    </div>
+    <div class="gauge-center" style="position:relative;margin-top:-150px;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div class="lv" style="font-size:30px;font-weight:700;color:${risk.color}">${risk.lvl}</div>
+      <div class="lb" style="font-size:11px;color:var(--sub)">内涝风险等级</div>
+    </div>
+    <div class="stormtag" style="margin-top:6px"><b>${STORM_EMOJI[S.storm]} ${STORM_LVL[S.storm]}</b><br>${S.storm>0?'台风/暴雨影响中':'天气正常'}</div>
+    <div class="floodstat" style="margin-top:8px"><span>积水点超标</span><b style="color:${FLOOD.some(f=>f.depth>10)?'#fca5a5':'#6ee7b7'}">${FLOOD.filter(f=>f.depth>10).length} 处</b></div>
+    <div class="floodstat"><span>排污泵运行</span><b style="color:#fbbf24">${PITS.filter(k=>EQ['pumpD'+k.slice(-1)].run).length}/${PITS.length}</b></div>
+  </div>`;
+  $('panorama').innerHTML=supply+drain+riskBlock;
+}
+function renderDisaster(){
+  const b=$('disasterBanner');
+  if(S.storm>0){
+    b.classList.add('show');
+    $('disLevel').textContent=STORM_LVL[S.storm];
+    if(S.storm>=5){$('disTitle').textContent='🌀 台风"海葵"逼近 · 暴雨红色预警';$('disSub').textContent='特大暴雨内涝风险极高，智能体已启动最高级内涝应急预案，排水优先级拉满';}
+    else if(S.storm>=3){$('disTitle').textContent='⛈️ 暴雨橙色预警 · 内涝风险升高';$('disSub').textContent='集水井液位快速上升，智能体已预排并提升排水优先级';}
+    else{$('disTitle').textContent='🌧️ 降雨预警生效';$('disSub').textContent='智能体已下调集水井启动液位、提升生活水箱储备水位';}
+  }else b.classList.remove('show');
+}
+function drawDashboard(){
+  $('chUsage')&&lineChart('chUsage',[
+    {data:usage24,color:'#38bdf8',label:'实际用水 m³/h',fill:1},
+    {data:pred24,color:'#a78bfa',label:'AI预测',dash:'5 4',op:.9},
+  ],{xlabels:Array.from({length:24},(_,i)=>i+'时'),dec:0});
+}
+
+/* ================= 实时监测 ================= */
+function renderSenTable(){
+  const kw=($('senFilter').value||'').trim();
+  const rows=SENSORS.filter(s=>!kw||(s.id+s.eqName+s.type).includes(kw));
+  $('senTable').innerHTML=`<table class="tbl"><tr><th>点位</th><th>位置/对象</th><th>类型</th><th>当前值</th><th>状态</th></tr>`+
+    rows.map(s=>{
+      const st=s.st();const cls=st==='告警'?'b-dgr':st==='离线'?'b-mute':'b-ok';
+      return `<tr class="click" onclick="selSensor('${s.id}')" style="${S.selSensor===s.id?'background:rgba(45,212,191,.08)':''}"><td style="font-family:Consolas;color:#7dd3fc">${s.id}</td><td>${s.eqName}</td><td>${s.type}</td><td style="font-family:Consolas">${s.get()} ${s.unit}</td><td><span class="bg ${cls}">${st}</span></td></tr>`;
+    }).join('')+`</table><div class="small dim" style="padding:8px 10px">… 其余 ${58-SENSORS.length} 个点位接入边缘网关（楼层数据采集中）</div>`;
+}
+function selSensor(id){S.selSensor=id;renderSenTable();drawMonitor();}
+function drawMonitor(){
+  renderSenTable();
+  const s=SENSORS.find(x=>x.id===S.selSensor)||SENSORS[0];
+  $('selInfo').innerHTML=`<b style="color:#7dd3fc;font-family:Consolas">${s.id}</b>　${s.eqName} · ${s.type}　<span class="bg b-ok">${s.st()}</span>`;
+  if(s.eq&&buf.levels[s.eq]){lineChart('chSensor',[{data:buf.levels[s.eq],color:'#38bdf8',label:s.eqName+'液位 %',fill:1}],{min:0,max:100,dec:0});}
+  else if(s.type.includes('积水')){const i=FLOOD.findIndex(f=>f.name===s.eqName);lineChart('chSensor',[{data:buf.flood[i]||[0],color:'#f87171',label:s.eqName+' cm',fill:1}],{min:0,max:45,dec:0});}
+  else{lineChart('chSensor',[{data:buf.flow,color:'#34d399',label:s.eqName+' '+s.unit,fill:1}],{dec:1});}
+  $('senMeta').innerHTML=`采样周期 2s · 传输协议 MQTT over 4G/LoRa · 精度 ±0.5%FS · 本点位今日已采集 <b style="color:#5eead4">${Math.round(86400/2)}</b> 帧数据`;
+  const series=TANKS.concat(PITS).map((k,i)=>({data:buf.levels[k],color:['#38bdf8','#0ea5e9','#7dd3fc','#2dd4bf','#34d399','#a3e635','#fbbf24','#f59e0b','#f87171','#fb7185'][i],label:EQ[k].name,op:.85,w:1.6}));
+  lineChart('chLevels',series,{min:0,max:100,dec:0});
+}
+
+/*JS2B*/
+/* ================= 数字孪生 ================= */
+let TROOT=null;
+function buildTwin(){
+  const svg=$('twin'); svg.innerHTML='';
+  const defs=mk('defs',{},svg);
+  const wg=mk('linearGradient',{id:'waterGrad',x1:0,y1:0,x2:0,y2:1},defs);
+  mk('stop',{offset:'0%','stop-color':'#38bdf8'},wg); mk('stop',{offset:'100%','stop-color':'#0c4a8f'},wg);
+  const fg=mk('linearGradient',{id:'fireGrad',x1:0,y1:0,x2:0,y2:1},defs);
+  mk('stop',{offset:'0%','stop-color':'#f87171'},fg); mk('stop',{offset:'100%','stop-color':'#7f1d1d'},fg);
+  const dg=mk('linearGradient',{id:'drainGrad',x1:0,y1:0,x2:0,y2:1},defs);
+  mk('stop',{offset:'0%','stop-color':'#a3e635'},dg); mk('stop',{offset:'100%','stop-color':'#3f6212'},dg);
+  mk('rect',{x:0,y:0,width:1080,height:800,fill:'#0a1830'},svg);
+  mk('text',{x:24,y:30,fill:'#5eead4','font-size':'13','font-weight':'600'},svg).textContent='🏙️ 兰生大厦 · 智慧水务数字孪生（剖面）';
+  mk('text',{x:24,y:50,fill:'#5c7492','font-size':'10.5'},svg).textContent='点击设备查看详情 · 水泵运行时管线流动 · 暴雨时显示内涝积水点';
+  const g=mk('g',{transform:'translate(16,32)'},svg);
+  TROOT=g;
+  mk('line',{x1:20,y1:500,x2:1060,y2:500,stroke:'#27486f','stroke-width':2},g);
+  for(let i=0;i<30;i++)mk('line',{x1:20+i*35,y1:500,x2:30+i*35,y2:510,stroke:'#1c3a5c'},g);
+  mk('text',{x:1040,y:498,fill:'#5c7492','font-size':'10','text-anchor':'end'},g).textContent='±0.000';
+  const twX=170,twY=100,twW=200,twH=400;
+  mk('rect',{x:twX,y:twY,width:twW,height:twH,fill:'#0f2242',stroke:'#27486f','stroke-width':2},g);
+  for(let f=0;f<39;f++){const y=twY+twH-(f+1)*(twH/39);mk('line',{x1:twX,y1:y,x2:twX+twW,y2:y,stroke:'#1c3a5c','stroke-width':.5},g);}
+  mk('text',{x:twX+6,y:twY+16,fill:'#6b86a8','font-size':'9.5'},g).textContent='39F 屋顶设备层';
+  mk('text',{x:twX+6,y:twY+twH-8,fill:'#6b86a8','font-size':'9.5'},g).textContent='1F 大堂';
+  mk('text',{x:twX+twW/2,y:twY+twH/2-4,fill:'#2c4a73','font-size':'26','font-weight':'700','text-anchor':'middle'},g).textContent='兰生大厦';
+  mk('text',{x:twX+twW/2,y:twY+twH/2+16,fill:'#2c4a73','font-size':'10','text-anchor':'middle'},g).textContent='LANSENG BUILDING';
+  mk('line',{x1:twX+twW/2,y1:twY,x2:twX+twW/2,y2:twY-14,stroke:'#27486f','stroke-width':2},g);
+  mk('circle',{cx:twX+twW/2,cy:twY-18,r:3,fill:'#f87171',class:'blink'},g);
+  const b={b1:520,b2:590,b3:660};
+  ['b1','b2','b3'].forEach((k,i)=>{
+    mk('rect',{x:120,y:b[k],width:640,height:60,fill:'#0b1b34',stroke:'#1e3a5f'},g);
+    mk('text',{x:128,y:b[k]+18,fill:'#5c7492','font-size':'10'},g).textContent=(i===0?'B1F 泵房/车库':i===1?'B2F 车库/消防泵房':'B3F 设备层/车库');
+  });
+  mk('path',{d:'M386 520 L386 60',stroke:'#38bdf8','stroke-width':5,fill:'none',opacity:.85},g);
+  mk('path',{d:'M486 600 L486 60',stroke:'#f87171','stroke-width':5,fill:'none',opacity:.85},g);
+  mk('text',{x:384,y:54,fill:'#38bdf8','font-size':'9','text-anchor':'end'},g).textContent='给水立管';
+  mk('text',{x:488,y:54,fill:'#f87171','font-size':'9'},g).textContent='消防立管';
+  mk('path',{d:'M20 552 L140 552',stroke:'#38bdf8','stroke-width':4,fill:'none'},g);
+  mk('path',{d:'M20 552 l10 -5 l0 10 z',fill:'#38bdf8'},g);
+  mk('text',{x:20,y:540,fill:'#5c7492','font-size':'9'},g).textContent='市政给水';
+  mk('path',{d:'M250 552 L300 548',stroke:'#38bdf8','stroke-width':3,fill:'none',opacity:.7},g);
+  mk('path',{d:'M356 548 L386 548 L386 60',stroke:'#38bdf8','stroke-width':3,fill:'none',opacity:.7},g);
+  mk('path',{d:'M250 690 L415 690 L415 540 L386 540',stroke:'#38bdf8','stroke-width':3,fill:'none',opacity:.7,class:'flow'},g);
+  mk('path',{d:'M410 622 L430 622',stroke:'#7dd3fc','stroke-width':3,fill:'none',opacity:.7},g);
+  mk('path',{d:'M458 622 L486 622 L486 60',stroke:'#f87171','stroke-width':3,fill:'none',opacity:.7},g);
+  mk('path',{d:'M384 712 L760 712',stroke:'#a3e635','stroke-width':4,fill:'none'},g);
+  mk('path',{d:'M760 712 l10 -5 l0 10 z',fill:'#a3e635'},g);
+  mk('text',{x:650,y:728,fill:'#a3e635','font-size':'9'},g).textContent='→ 市政排水';
+  drawEquipment();
+  drawFloodMarks();
+}
+function shortName(e){
+  let n=e.name;
+  n=n.replace('屋顶','').replace('B3F','').replace('B1F','').replace('B2F','');
+  n=n.replace('（机房）','').replace('（电梯基坑）','').replace('（备用）','');
+  n=n.replace('生活水泵','生活泵');
+  return n;
+}
+function drawFloodMarks(){
+  const svg=TROOT||$('twin'); const g=mk('g',{id:'floodLayer'},svg);
+  FLOOD.forEach(f=>{
+    const t=f.tw;
+    if(S.storm<2&&f.depth<=0)return;
+    const deep=f.depth>10;
+    mk('rect',{x:t.x,y:t.y,width:t.w,height:t.h,rx:4,fill:deep?'rgba(248,113,113,.16)':'rgba(125,211,252,.1)',stroke:deep?'#f87171':'#7dd3fc','stroke-width':1.5,'stroke-dasharray':'4 3',class:'floodmark'+(deep?' deep':'')},g);
+    mk('text',{x:t.x+t.w/2,y:t.y-4,fill:deep?'#fca5a5':'#7dd3fc','font-size':'8.5','text-anchor':'middle'},g).textContent=shortName(f);
+    mk('text',{x:t.x+t.w/2,y:t.y+t.h/2+3,fill:deep?'#fecaca':'#bae6fd','font-size':'10','font-weight':'700','text-anchor':'middle'},g).textContent=f.depth>0?f.depth.toFixed(0)+'cm':'监测中';
+  });
+}
+function drawEquipment(){
+  const svg=TROOT||$('twin'); const g=mk('g',{id:'eqLayer'},svg);
+  Object.values(EQ).forEach(e=>{
+    const grp=mk('g',{class:'eq sys-'+e.sys,id:'eq-'+e.id},g);
+    grp.addEventListener('click',()=>selectEq(e.id));
+    if(e.kind==='pump'){
+      let cx,cy;
+      if(e.id.startsWith('pumpL')){cx=300+[1,2,3].indexOf(+e.id.slice(-1))*28;cy=548;}
+      else if(e.id.startsWith('pumpF')){cx=430+(e.id==='pumpF1'?0:28);cy=620;}
+      else {const pit=EQ[e.ref];cx=pit.tw.x-16;cy=pit.tw.y+22;}
+      const c=mk('circle',{cx,cy,r:11,fill:e.run?'#fbbf24':e.fault?'#f87171':'#1c3a5c',stroke:e.fault?'#f87171':'#64748b','stroke-width':2,class:e.run?'pulsing':''},grp);
+      mk('text',{x:cx,y:cy+4,fill:'#0b1b34','font-size':'9','text-anchor':'middle','font-weight':'700'},grp).textContent='P';
+      mk('text',{x:cx,y:cy+23,fill:'#8fa8c7','font-size':'8','text-anchor':'middle'},grp).textContent=shortName(e);
+      e._g=grp;e._c=c;e._cx=cx;e._cy=cy;
+      return;
+    }
+    const t=e.tw; const isFire=e.sys==='fire', isPit=e.kind==='pit';
+    mk('rect',{x:t.x,y:t.y,width:t.w,height:t.h,rx:5,fill:'#0e2240',stroke:'#3a6ba0','stroke-width':1.5,class:'eqbody'},grp);
+    const pct=clamp(e.lvl,0,100);
+    const wy=t.y+t.h*(1-pct/100), wh=t.h*pct/100;
+    const wrect=mk('rect',{x:t.x+2.5,y:wy,width:t.w-5,height:wh,rx:3,fill:isFire?'url(#fireGrad)':isPit?'url(#drainGrad)':'url(#waterGrad)'},grp);
+    mk('text',{x:t.x+t.w/2,y:t.y-5,fill:'#9fb3cf','font-size':'8.5','text-anchor':'middle'},grp).textContent=shortName(e);
+    const pctT=mk('text',{x:t.x+t.w/2,y:t.y+t.h/2,fill:'#fff','font-size':'11.5','font-weight':'700','text-anchor':'middle'},grp); pctT.textContent=Math.round(e.lvl)+'%';
+    if(e.star){mk('circle',{cx:t.x+t.w-4,cy:t.y+4,r:5,fill:'#2dd4bf'},grp);mk('text',{x:t.x+t.w-4,y:t.y+7,fill:'#0b1b34','font-size':'7','text-anchor':'middle','font-weight':'700'},grp).textContent='M1';}
+    e._g=grp;e._t={t:t};e._w=wrect;e._pct=pctT;
+  });
+}
+function setMode(m,btn){
+  const svg=$('twin');svg.classList.remove('mode-life','mode-fire','mode-drain');if(m!=='all')svg.classList.add('mode-'+m);
+  document.querySelectorAll('#page-twin .fbtn').forEach(b=>b.classList.toggle('on',b===btn));
+}
+function selectEq(id){
+  const e=EQ[id]; S.selEq=id;
+  document.querySelectorAll('#eqLayer .eq').forEach(g=>g.classList.remove('sel'));
+  e._g.classList.add('sel');
+  const box=e._c?{x:e._cx,y:e._cy}:{x:e._t.t.x+e._t.t.w/2,y:e._t.t.y+e._t.t.h/2};
+  const ring=mk('circle',{cx:box.x,cy:box.y,r:10,class:'pulse-ring',stroke:'#2dd4bf'},TROOT||$('twin'));
+  setTimeout(()=>ring.remove(),4000);
+  renderEqDetail(e);
+}
+function renderEqDetail(e){
+  let body='<h4>'+e.name+'</h4><div class="small dim" style="margin-bottom:8px">'+e.loc+'</div>';
+  body+='<div class="kv"><span>当前液位</span><b style="font-size:20px">'+Math.round(e.lvl)+'%</b></div>';
+  if(e.kind!=='pump'){
+    body+='<div class="kv"><span>有效容积</span><b>'+e.capTxt+'</b></div>';
+    body+='<div class="kv"><span>AI动态阈值带</span><b>'+Math.round(dynMin(e.id))+'% ~ '+Math.round(dynMax(e.id))+'%</b></div>';
+    body+='<div class="kv"><span>安全上下限</span><b>'+e.min+'% ~ '+e.max+'%</b></div>';
+    body+='<div class="kv"><span>状态</span><b>'+statusText(e)+'</b></div>';
+    body+='<div class="kv"><span>关联传感器</span><b style="color:#7dd3fc;font-family:Consolas">'+(SENSORS.find(s=>s.eq===e.id)?.id||'—')+'</b></div>';
+  }else{
+    body+='<div class="kv"><span>运行状态</span><b style="color:'+(e.run?'#6ee7b7':e.fault?'#fca5a5':'#8fa8c7')+'">'+(e.fault?'故障':e.run?'运行中':'备用/待命')+'</b></div>';
+    body+='<div class="kv"><span>服务对象</span><b>'+EQ[e.ref].name+'</b></div>';
+    body+='<div class="kv"><span>今日启停次数</span><b>'+Math.round(rnd(3,14))+' 次</b></div>';
+    body+='<div class="kv"><span>累计运行</span><b>'+Math.round(rnd(120,900))+' h</b></div>';
+  }
+  body+='<div class="eqbtns">';
+  if(e.kind==='pump') body+='<button class="btn sm" onclick="manualPump(\''+e.id+'\')">'+((e.run&&!e.fault)?'停止':e.fault?'检修确认':'启动')+'</button>';
+  else if(e.sys==='drain') body+='<button class="btn sm" onclick="manualDrain(\''+e.id+'\')">手动排水</button>';
+  else body+='<button class="btn sm" onclick="manualFill(\''+e.id+'\')">手动补水</button>';
+  body+='<button class="btn sm blue" onclick="locateEq(\''+e.id+'\')">📍 一键定位</button>';
+  body+='<button class="btn sm warn" onclick="quickOrder(\''+e.id+'\')">＋ 生成工单</button>';
+  body+='</div>';
+  $('eqDetail').innerHTML='<h3>🔍 设备详情</h3>'+body;
+}
+function statusText(e){
+  if(e.kind==='pit')return e.drainOn?'排污泵排水运行中':'静水位正常';
+  if(e.lvl>e.max-2)return '⚠️ 高位告警'; if(e.lvl<e.min+3)return '⚠️ 低位告警';
+  return e.sys==='fire'?'消防常高位保持':'运行正常';
+}
+function manualFill(id){
+  const e=EQ[id];
+  modal('手动补水确认','将指令下发至 <b>'+e.name+'</b> 的电动进水阀，注入补水（约30秒恢复至安全水位）。是否执行？','确认补水',()=>{
+    S.forceIn=14; S.valveB3=true;
+    log('执行','人工指令：'+e.name+' 启动补水，电动阀开启','ok');
+  });
+}
+function manualDrain(id){
+  const e=EQ[id];
+  modal('手动排水确认','将指令下发至 <b>'+e.name+'</b> 对应排污泵，强制排水至安全液位。是否执行？','确认排水',()=>{
+    e.drainOn=true; EQ['pumpD'+e.id.slice(-1)].run=true;
+    log('执行','人工指令：'+e.name+' 排污泵启动','ok');
+  });
+}
+function manualPump(id){
+  const e=EQ[id];
+  if(e.fault){e.fault=false;log('执行','人工指令：'+e.name+' 检修完成，恢复可用','ok');}
+  else{e.run=!e.run;log('执行','人工指令：'+e.name+' '+(e.run?'启动':'停止'),'ok');}
+  drawTwin();
+}
+function locateEq(id){go('twin');selectEq(id);log('定位','数字孪生定位到 '+EQ[id].name,'ok');}
+function quickOrder(id){S.selEq=id;go('orders');$('ofPt').value=id;toggleOrderForm(true);}
+function drawTwin(){
+  buildTwin();
+  const e=S.selEq&&EQ[S.selEq]; if(e)selectEq(S.selEq);
+}
+function refreshTwin(){
+  Object.values(EQ).forEach(e=>{
+    if(e.kind==='pump'){ if(e._c){e._c.setAttribute('fill',e.run?'#fbbf24':e.fault?'#f87171':'#1c3a5c');e._c.classList.toggle('pulsing',!!e.run);} return; }
+    if(!e._t)return; const t=e._t.t; const pct=clamp(e.lvl,0,100);
+    if(e._w){e._w.setAttribute('y',t.y+t.h*(1-pct/100));e._w.setAttribute('height',Math.max(0,t.h*pct/100));}
+    if(e._pct)e._pct.textContent=Math.round(e.lvl)+'%';
+  });
+  /* 积水点动态更新 */
+  const fl=$('floodLayer'); if(fl)fl.remove();
+  drawFloodMarks();
+}
+
+/* ================= AI 决策中心 ================= */
+function renderAICards(){
+  const cards=[
+    ['高位阈值',Math.round(dynMax('b3living'))+'%','随天气/负荷动态',S.storm>0?'b-warn':'b-ok'],
+    ['低位阈值',Math.round(dynMin('b3living'))+'%','触发自动补水','b-info'],
+    ['降雨修正系数',S.thrRain.toFixed(2),S.storm>0?'正在生效':'气象未触发','b-info'],
+    ['内涝预测',floodRisk().lvl+'风险',S.storm>0?'台风/暴雨影响中':'无风险','b-ok'],
+  ];
+  $('aiCards').innerHTML=cards.map(c=>`<div class="panel kpi"><div class="lb">${c[0]}</div><div class="v" style="font-size:21px">${c[1]}</div><div class="tr"><span class="bg ${c[3]}">${c[2]}</span></div></div>`).join('');
+}
+function drawAI(){
+  renderAICards();
+  const n=24; const pred=[],hi=[],lo=[];
+  const h0=now.getHours(); const cur=EQ.b3living.lvl;
+  for(let i=0;i<n;i++){
+    const h=(h0+i)%24;
+    let v=cur;
+    if(i>0){ v=pred[i-1] - (demand(h)*4.5) + rnd(-1,1); if(h>=20&&h<=24) v+=2.5; }
+    pred.push(clamp(v,30,90));
+    hi.push(Math.round(dynMax('b3living')));
+    lo.push(Math.round(dynMin('b3living')));
+  }
+  lineChart('chThresh',[
+    {data:pred,color:'#a78bfa',label:'AI预测液位 %',fill:1,w:2.2},
+    {data:buf.levels.b3living.slice(-6),color:'#38bdf8',label:'实测液位 %',w:2.5},
+  ],{min:25,max:95,dec:0,xlabels:Array.from({length:n},(_,i)=>(h0+i)%24+'时'),band:[hi,lo]});
+  $('vThrHigh').textContent=S.thrHigh+'%';
+  $('vThrLow').textContent=S.thrLow+'%';
+  $('vThrRain').textContent=S.thrRain.toFixed(2);
+  $('dataDays').textContent=S.dataDays;
+  $('optCnt').textContent=S.optCnt;
+}
+['thrHigh','thrLow','thrRain'].forEach((id,idx)=>{
+  const el=$(id); el&&el.addEventListener('input',()=>{
+    const v=+el.value;
+    if(idx===0){S.thrHigh=v;$('vThrHigh').textContent=v+'%';}
+    if(idx===1){S.thrLow=v;$('vThrLow').textContent=v+'%';}
+    if(idx===2){S.thrRain=1+v/100;$('vThrRain').textContent=S.thrRain.toFixed(2);}
+    log('优化','人工调整阈值模型参数：'+el.id+' → '+el.value,'ai');
+  });
+});
+
+/* ================= 智能体中枢 ================= */
+const AGENTS=[
+  {id:'perceive',ic:'📡',nm:'感知 Agent',calls:'58点/2s',status:'运行中',done:12864,
+   ds:'IoT 设备秒级采集、多协议解析（Modbus/LoRa/4G）、断点续传、异常点位心跳检测',
+   tags:['秒级采集','协议解析','心跳检测']},
+  {id:'predict',ic:'🔮',nm:'预测 Agent',calls:'每5min',status:'运行中',done:288,
+   ds:'LSTM 负荷预测 + 气象/台风融合，输出未来4h用水与内涝趋势，驱动动态阈值',
+   tags:['LSTM','气象融合','阈值预测']},
+  {id:'decide',ic:'🧭',nm:'决策 Agent',calls:'事件驱动',status:'待命',done:36,
+   ds:'基于动态阈值与调度优先级生成控制策略，含补排水优先级、内涝应急、安全兜底',
+   tags:['调度策略','内涝应急','安全兜底']},
+  {id:'execute',ic:'⚙️',nm:'执行 Agent',calls:'事件驱动',status:'待命',done:36,
+   ds:'电动阀/水泵指令下发、执行回读校验、失败自动重试与备泵切换',
+   tags:['指令下发','回读校验','备泵切换']},
+  {id:'feedback',ic:'🪞',nm:'反馈 Agent',calls:'闭环校验',status:'待命',done:36,
+   ds:'执行结果回读比对、异常复核、闭环确认，异常时回滚或升级告警',
+   tags:['结果回读','异常复核','闭环确认']},
+  {id:'optimize',ic:'📈',nm:'优化 Agent',calls:'日滚动',status:'学习中',done:3,
+   ds:'阈值自学习与策略微调，沉淀样本数据，日滚动更新模型参数',
+   tags:['自学习','策略微调','模型迭代']},
+];
+let curTask=null;
+AGENTS.forEach(a=>a._base=a.status);
+function buildPipeline(){
+  $('pipeline').innerHTML=AGENTS.map((a,i)=>`<div class="stg" id="stg${i}"><div class="ic">${a.ic}</div><div class="nm">${a.nm}</div><div class="ds" id="stgds${i}">${a.status}</div></div>`+(i<5?'<span class="arw">➜</span>':'')).join('');
+  renderAgentCards();
+  renderTaskPanel();
+}
+function renderAgentCards(){
+  $('agentCards').innerHTML=AGENTS.map(a=>{
+    const stCls=a.status==='处理中'?'b-warn':(a.status==='运行中'||a.status==='学习中')?'b-ok':'b-mute';
+    return `<div class="panel agent-card ${a.status==='处理中'?'busy':''}" id="ac-${a.id}">
+      <div class="ac-head"><span class="ic">${a.ic}</span><span class="nm">${a.nm}</span><span class="bg ${stCls} st">${a.status}</span></div>
+      <div class="ds">${a.ds}</div>
+      <div class="tags">${a.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div class="ac-foot"><span>今日处理 ${a.done}</span><span>${a.calls}</span></div>
+    </div>`;
+  }).join('');
+}
+function setAgentStatus(i,st){
+  AGENTS[i].status=st;
+  const d=$('stgds'+i); if(d)d.textContent=st;
+}
+function renderTaskPanel(){
+  const tp=$('taskPanel'); if(!tp)return;
+  if(!curTask){tp.style.display='none';return;}
+  tp.style.display='block';
+  tp.innerHTML=`<div class="tp-head"><span class="tp-title">🎯 当前处置任务：<b>${curTask.title}</b></span><span class="tp-step">${curTask.step}/6 阶段</span></div>
+  <div class="tp-bar"><i style="width:${curTask.step/6*100}%"></i></div>
+  <div class="tp-cur">正在执行：<b>${AGENTS[curTask.step-1].nm}</b> · ${curTask.msg}</div>`;
+}
+function stgOn(i,on){const s=$('stg'+i);if(s)s.classList.toggle('on',on);}
+function setHint(t){$('loopHint')&&($('loopHint').textContent=t);}
+function renderLoopStats(){
+  const auto=S.loopDone?Math.round(S.loopAuto/Math.max(S.loopDone,1)*100):100;
+  $('loopStats').innerHTML=`
+    <div class="kv"><span>今日闭环事件</span><b style="color:#5eead4">${S.loopClosed}</b></div>
+    <div class="kv"><span>自动执行率</span><b style="color:#6ee7b7">${auto}%</b></div>
+    <div class="kv"><span>平均闭环时长</span><b>${S.loopClosed?avgResp().toFixed(0):'—'}s</b></div>
+    <div class="kv"><span>阈值微调次数</span><b>${S.optCnt}</b></div>
+    <div class="kv"><span>内涝事件处置</span><b>${S.floodEvents} 起</b></div>
+    <div class="kv"><span>告警响应达标</span><b>${respBadge()}</b></div>`;
+}
+function agentLoop(event){
+  if(S.agentBusy)return; S.agentBusy=true; setHint('⚡ 闭环执行中：'+event.title);
+  curTask={title:event.title,step:1,msg:'初始化…'}; renderTaskPanel();
+  const stages=[
+    {t:'感知',tag:'感知',m:'采集异常点位与关联传感器数据，校验点位在线状态…',lvl:'info',act:null},
+    {t:'预测',tag:'预测',m:'融合历史用水+气象预报，预测趋势并更新动态阈值…',lvl:'ai',act:null},
+    {t:'决策',tag:'决策',m:event.decision,lvl:'ai',act:event.decisionAct},
+    {t:'执行',tag:'执行',m:event.exec,lvl:'ok',act:event.execAct},
+    {t:'反馈',tag:'反馈',m:event.feedback,lvl:'ok',act:event.feedbackAct},
+    {t:'优化',tag:'优化',m:event.optimize||'回读结果写入样本，阈值策略微调 '+ (++S.optCnt) +' 次',lvl:'ai',act:event.optAct},
+  ];
+  stages.forEach((s,i)=>{
+    setTimeout(()=>{
+      stgOn(i,true);
+      setAgentStatus(i,'处理中'); renderAgentCards();
+      curTask.step=i+1; curTask.msg=s.m; renderTaskPanel();
+      log(s.tag,s.m,s.lvl);
+      s.act&&s.act();
+      if(i>0){stgOn(i-1,false); setAgentStatus(i-1,AGENTS[i-1]._base);}
+      if(i===stages.length-1){
+        S.agentBusy=false;S.loopDone++;if(event.auto)S.loopAuto++;S.loopClosed++;
+        setAgentStatus(5,AGENTS[5]._base);
+        setTimeout(()=>{curTask=null;renderTaskPanel();},1400);
+        setHint('待机中：持续感知监测…');stgOn(5,false);renderLoopStats();renderAgentCards();
+        event.done&&event.done();
+      }
+    },i*850);
+  });
+}
+
+/*JS3B*/
+/* ================= 告警 ================= */
+function causeOf(src,msg){
+  const t=src+' '+msg;
+  const lib=[
+    {re:/满溢|倒灌|内涝|积水/,cause:'短时强降雨超过集水井/排水系统设计排水能力',solution:'启动应急潜水泵与预排、提升排水优先级、临时封闭低洼入口'},
+    {re:/超上限|溢水|高位/,cause:'进水阀未及时关闭或用水骤降，进水速率大于消耗',solution:'关闭进水阀、启动转输/溢流、排查用水异常'},
+    {re:/低于下限|低位|供水保障/,cause:'市政停水或进水阀故障，补水不及时',solution:'切换备用水源、启动应急补水、检修进水阀'},
+    {re:/泵.*故障|停机/,cause:'电机/机械密封老化或供电回路异常',solution:'切换备用泵、下发检修工单、检查供电回路'},
+    {re:/通信中断|离线/,cause:'传感器供电中断或无线链路信号衰减',solution:'远程重启、现场检查供电与天线、更换备件'},
+  ];
+  for(const x of lib){ if(x.re.test(t)) return x; }
+  return {cause:'需结合历史数据与关联点位进一步诊断',solution:'已交由 AI Agent 闭环处置，必要时转人工工单'};
+}
+function createAlarm(lvl,src,msg,auto,decision){
+  const c=causeOf(src,msg);
+  const a={id:'A'+ ++S.alarmSeq,time:fmtHM(now),lvl,src,msg,cause:c.cause,solution:c.solution,status:'未处理',resp:null,closed:false};
+  S.alarms.unshift(a); if(S.alarms.length>60)S.alarms.pop();
+  updateBell(); renderDashAlarms(); if(curPage==='alerts')drawAlerts(); renderAlStats();
+  log('告警','【'+lvl+'】'+src+'：'+msg,lvl==='提示'?'warn':'dgr');
+  const resp=rnd(120,260);
+  setTimeout(()=>{
+    a.status='处理中'; a.resp=resp; updateBell(); renderDashAlarms(); if(curPage==='alerts')drawAlerts();
+    agentLoop({
+      title:src+' '+msg, auto:auto!==false,
+      decision:decision||'依据动态阈值与调度优先级生成控制策略',
+      exec:'联动执行机构：'+(auto!==false?'AI自动下发控制指令':'人工确认后下发'),
+      feedback:'执行结果回读正常，参数回落至安全区间',
+      done:()=>{a.status='已恢复';a.closed=true;S.respSecs.push(resp);updateBell();renderDashAlarms();renderKPIs();if(curPage==='alerts')drawAlerts();renderAlStats();log('恢复','【'+src+'】已恢复，闭环时长 '+(resp/60).toFixed(1)+'min（目标<5min）','ok');}
+    });
+  },1600);
+}
+function updateBell(){
+  const c=S.alarms.filter(a=>!a.closed).length;
+  const el=$('bellCnt');el.style.display=c?'block':'none';el.textContent=c;
+}
+function setAlFilter(f,btn){S.alFilter=f;document.querySelectorAll('#alFilters .fbtn').forEach(b=>b.classList.toggle('on',b===btn));drawAlerts();}
+function renderAlStats(){
+  const open=S.alarms.filter(a=>!a.closed).length;
+  const urgent=S.alarms.filter(a=>(a.lvl==='紧急'||a.lvl==='内涝')&&!a.closed).length;
+  const st=[
+    ['今日告警',S.alarms.length,'起'],
+    ['未恢复',open,'起'],
+    ['紧急/内涝未处理',urgent,'起'],
+    ['平均响应',(avgResp()/60).toFixed(1),'min <5'],
+  ];
+  $('alStats')&&($('alStats').innerHTML=st.map(c=>`<div class="panel kpi"><div class="lb">${c[0]}</div><div class="v" style="font-size:22px">${c[1]}<small>${c[2]}</small></div></div>`).join(''));
+}
+function drawAlerts(){
+  renderAlStats();
+  let list=S.alarms;
+  if(S.alFilter!=='all'){if(S.alFilter==='open')list=list.filter(a=>!a.closed);else list=list.filter(a=>a.lvl===S.alFilter);}
+  $('alTable').innerHTML=`<table class="tbl"><tr><th>时间</th><th>等级</th><th>点位</th><th>事件详情 · 原因 / 处置方案</th><th>状态</th><th>响应时长</th><th>处理方式</th></tr>`+
+    list.map(a=>{
+      const cls=a.lvl==='紧急'||a.lvl==='内涝'?'b-dgr':a.lvl==='重要'?'b-warn':'b-info';
+      const stc=a.status==='未处理'?'b-dgr':a.status==='处理中'?'b-warn':'b-ok';
+      return `<tr><td style="font-family:Consolas">${a.time}</td><td><span class="bg ${cls}">${a.lvl}</span></td><td>${a.src}</td><td style="white-space:normal;min-width:340px">${a.msg}<div class="small dim" style="margin-top:5px;line-height:1.7">🔍 <b style="color:#fcd34d">原因</b>：${a.cause||'—'}<br>✅ <b style="color:#6ee7b7">方案</b>：${a.solution||'—'}</div></td><td><span class="bg ${stc}">${a.status}</span></td><td style="font-family:Consolas">${a.resp!=null?(a.resp/60).toFixed(1)+'min':a.status==='处理中'?'处理中':'—'}</td><td><span class="bg b-pur">AI Agent 闭环</span></td></tr>`;
+    }).join('')+`</table>${list.length?'':'<div class="dim small center" style="padding:24px">无符合条件的告警记录</div>'}`;
+}
+
+/* ================= 工单巡检 ================= */
+function seedOrders(){
+  S.orders=[
+    {id:'WO-20261008-01',src:'B3F生活水箱液位计',type:'传感器校准',st:'待处理',t:'09:12',who:'张工·工程部'},
+    {id:'WO-20261007-03',src:'B1F生活水泵2号',type:'保养巡检',st:'处理中',t:'14:40',who:'李工·工程部'},
+    {id:'WO-20261007-01',src:'消防稳压管PT-03',type:'设备维修',st:'已完成',t:'08:05',who:'王工·工程部'},
+    {id:'WO-20261006-02',src:'B3F集水井③',type:'管道检漏',st:'已完成',t:'16:22',who:'张工·工程部'},
+    {id:'WO-20261005-01',src:'市政进水流量计',type:'设备维修',st:'已完成',t:'10:30',who:'李工·工程部'},
+  ];
+}
+function renderOdStats(){
+  const st=[
+    ['本月工单',(S.orders.length+38),'单'],
+    ['待处理',S.orders.filter(o=>o.st==='待处理').length,'单'],
+    ['完成率','91','%'],
+    ['平均处理时长','3.2','h'],
+  ];
+  $('odStats').innerHTML=st.map(c=>`<div class="panel kpi"><div class="lb">${c[0]}</div><div class="v" style="font-size:22px">${c[1]}<small>${c[2]}</small></div></div>`).join('');
+}
+function drawOrders(){
+  renderOdStats();
+  barChart('chPatrol',['改造前·人工巡检','改造后·人工巡检','AI远程巡检'], [{data:[60,28,32],color:'#38bdf8',label:'巡检次数（次/月）'}], {max:66});
+}
+function renderPatrolTbl(){
+  const rows=[
+    ['每日现场巡检','2 次/日','1 次/日','↓50%','现场巡检改为重点巡检'],
+    ['AI远程数据巡检','0','实时 · 每2s','—','传感器全覆盖自动巡检'],
+    ['水箱/集水井专项','每周1次','每月1次','↓75%','液位AI监控替代'],
+    ['水泵保养','每月1次','每月1次','不变','预防性维护'],
+    ['水质检测','每周1次','每周1次','不变','余氯/浊度自动在线'],
+    ['内涝隐患排查','汛期每日','暴雨自动触发','—','台风/暴雨时AI自动预警'],
+  ];
+  $('patrolTbl').innerHTML='<tr><th>巡检项目</th><th>改造前频次</th><th>改造后频次</th><th>变化</th><th>说明</th></tr>'+rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td style="color:#5eead4">${r[2]}</td><td><span class="bg b-ok">${r[3]}</span></td><td class="dim">${r[4]}</td></tr>`).join('');
+}
+function toggleOrderForm(show){
+  const f=$('orderForm');f.classList.toggle('show',show===true?!f.classList.contains('show'):!f.classList.contains('show'));
+  if(!$('ofPt').options.length){
+    $('ofPt').innerHTML=Object.values(EQ).map(e=>`<option value="${e.id}">${e.name}（${e.loc}）</option>`).join('');
+    if(S.selEq)$('ofPt').value=S.selEq;
+  }
+}
+function createOrder(manual){
+  const id='WO-'+now.toISOString().slice(0,10).replace(/-/g,'')+'-'+(++S.woSeq+10);
+  const e=EQ[$('ofPt').value];const type=$('ofType').value;
+  S.orders.unshift({id,src:e.name,type,st:'待处理',t:fmtHM(now),who:'待派单'});
+  $('ofNote').value='';toggleOrderForm(false);drawOrders();
+  log('工单','新建工单 '+id+'：'+e.name+'（'+type+'）','ok');
+  if(manual)modal('工单已提交','工单 <b>'+id+'</b> 已生成并进入待派单队列，将自动通知值班工程师。','知道了',null);
+}
+function renderOdTable(){
+  $('odTable').innerHTML=`<table class="tbl"><tr><th>工单号</th><th>对象</th><th>类型</th><th>状态</th><th>时间</th><th>负责人</th><th>操作</th></tr>`+
+    S.orders.map(o=>{const cls=o.st==='待处理'?'b-warn':o.st==='处理中'?'b-info':'b-ok';return `<tr><td style="font-family:Consolas;color:#7dd3fc">${o.id}</td><td>${o.src}</td><td>${o.type}</td><td><span class="bg ${cls}">${o.st}</span></td><td style="font-family:Consolas">${o.t}</td><td>${o.who}</td><td>${o.st==='待处理'?'<button class="btn sm" onclick="acceptOrder(\''+o.id+'\')">接单</button>':o.st==='处理中'?'<button class="btn sm blue" onclick="doneOrder(\''+o.id+'\')">完工</button>':'—'}</td></tr>`;}).join('')+'</table>';
+}
+function acceptOrder(id){const o=S.orders.find(x=>x.id===id);o.st='处理中';o.who='张工·工程部';drawOrders();log('工单','工单 '+id+' 已接单','ok');}
+function doneOrder(id){const o=S.orders.find(x=>x.id===id);o.st='已完成';drawOrders();log('工单','工单 '+id+' 已完工','ok');}
+
+/* ================= 成效分析 ================= */
+function renderKpiCards(){
+  const st=[
+    ['⏱️','告警响应达标率','98.6%','目标<5min','b-ok'],
+    ['🚶','巡检减负','53%','目标50% · 超预期','b-ok'],
+    ['🛡️','零溢水零倒灌','127天','连续安全运行','b-ok'],
+    ['💧','节水率','6.8%','AI错峰调控','b-ok'],
+    ['⚡','泵组电耗','-11.2%','同比降低','b-ok'],
+  ];
+  $('kpiCards').innerHTML=st.map(c=>`<div class="panel kpi"><span class="ic">${c[0]}</span><div class="lb">${c[1]}</div><div class="v" style="font-size:23px">${c[2]}</div><div class="tr"><span class="bg ${c[4]}">${c[3]}</span></div></div>`).join('');
+}
+function drawKPI(){
+  renderKpiCards();
+  const resp=Array.from({length:30},(_,i)=>+(4.8- i*0.03 + rnd(-.4,.3)).toFixed(1)).map(v=>Math.max(1.8,v));
+  lineChart('chResp',[{data:resp,color:'#34d399',label:'平均响应时长 min',fill:1}],{min:0,max:6,dec:1});
+  barChart('chWater',['7月','8月','9月','10月'],[{data:[4860,4720,4610,4530],color:'#38bdf8',label:'月用水量 m³'}],{max:5200});
+  barChart('chFlood',['9月上旬','9月中旬','9月下旬','10月上旬'],[{data:[0,1,2,0],color:'#f87171',label:'内涝处置事件（起）'}],{max:4});
+  $('kpiTbl').innerHTML=`<tr><th>承诺成效指标</th><th>当前达成</th><th>状态</th><th>说明</th></tr>`+
+  [['告警响应 &lt; 5 分钟','平均 3.1 分钟','<span class="bg b-ok">已达成</span>','AI Agent 秒级感知、分钟级闭环'],
+   ['人工巡检减 50%','减 53%','<span class="bg b-ok">已达成</span>','AI远程巡检替代现场巡检'],
+   ['零溢水、零倒灌','连续 127 天 0 事件','<span class="bg b-ok">已达成</span>','动态阈值+预排策略'],
+   ['内涝快速响应','预案 3 分钟自动启动','<span class="bg b-ok">已达成</span>','台风/暴雨预警自动触发'],
+   ['设备全生命周期管理','数据资产沉淀中','<span class="bg b-info">M3 建设</span>','对应7.2跃迁项']].map(r=>`<tr><td>${r[0]}</td><td style="color:#5eead4">${r[1]}</td><td>${r[2]}</td><td class="dim">${r[3]}</td></tr>`).join('');
+}
+
+/* ================= 仿真引擎 ================= */
+/* 内涝风险自动侦测 → 自动启动应急预案 */
+function autoFloodPlan(risk){
+  S.floodEvents++;
+  const resp=rnd(120,260);
+  const a={id:'A'+ ++S.alarmSeq,time:fmtHM(now),lvl:'内涝',src:'内涝风险监测',msg:'风险等级达「'+risk.lvl+'」，自动启动应急预案',cause:'短时强降雨导致集水井与积水点水位快速抬升',solution:'启动内涝应急预案：排水优先级P1、集水井预排、积水点应急抽排、低洼入口防护',status:'处理中',resp,closed:false};
+  S.alarms.unshift(a); if(S.alarms.length>60)S.alarms.pop();
+  updateBell(); renderDashAlarms(); renderAlStats();
+  log('告警','【内涝】内涝风险监测：风险等级达「'+risk.lvl+'」，自动启动应急预案','dgr');
+  agentLoop({
+    title:'内涝风险自动侦测 → 应急预案（'+risk.lvl+'）',auto:true,
+    decision:'风险等级升至「'+risk.lvl+'」，自动启动内涝应急：排水优先级P1、集水井预排、积水点应急抽排、低洼入口防护',
+    exec:'联动执行：排污泵/应急潜水泵按优先级启动，电动阀联动调整',
+    feedback:'执行结果回读，各集水井与积水点水位回落',
+    optimize:'内涝预案触发记录入库，优化下次启动阈值',
+    done:()=>{a.status='已恢复';a.closed=true;S.respSecs.push(resp);updateBell();renderDashAlarms();renderAlStats();log('恢复','内涝应急预案执行完毕，风险回落至安全区间','ok');}
+  });
+}
+function simulate(){
+  tickN++; const h=now.getHours(); const d=demand(h);
+  curFlow=38*d*(1+rnd(-.06,.06));
+  drainFlow=3.2+(S.storm>0?S.storm*3.5:0)+rnd(-.4,.4);
+  EQ.roofA.lvl=clamp(EQ.roofA.lvl - d*0.5 - rnd(0,.2),0,100);
+  EQ.roofB.lvl=clamp(EQ.roofB.lvl - d*0.5 - rnd(0,.2),0,100);
+  const needRoof=EQ.roofA.lvl<dynMin('roofA')||EQ.roofB.lvl<dynMin('roofB');
+  EQ.pumpL1.run=needRoof&&!EQ.pumpL1.fault;
+  EQ.pumpL2.run=needRoof&&EQ.pumpL1.fault;
+  if(needRoof){EQ.b3living.lvl=clamp(EQ.b3living.lvl-1.1,0,100);EQ.roofA.lvl=clamp(EQ.roofA.lvl+0.8,0,100);EQ.roofB.lvl=clamp(EQ.roofB.lvl+0.8,0,100);}
+  EQ.b1pool.lvl=clamp(EQ.b1pool.lvl+(EQ.b1pool.lvl<55?1.6:-d*0.25),0,100);
+  EQ.roofFire.lvl=clamp(EQ.roofFire.lvl+rnd(-.05,.05),88,100);
+  EQ.firepool.lvl=clamp(EQ.firepool.lvl+rnd(-.03,.03),90,100);
+  PITS.forEach((k,i)=>{
+    const e=EQ[k];
+    const inflow=0.35 + S.storm*1.5 + rnd(0,.3);
+    e.lvl=clamp(e.lvl + inflow,0,100);
+    const pump=EQ['pumpD'+(i+1)];
+    if(e.lvl>dynMax(k)&&!e.drainOn){e.drainOn=true;pump.run=true;log('执行','集水井'+e.name+' 达启动液位，排污泵自动启动','ok');}
+    if(e.drainOn){e.lvl=clamp(e.lvl-4.2-S.storm*0.7,0,100);if(e.lvl<dynMin(k)){e.drainOn=false;pump.run=false;log('反馈','集水井'+e.name+' 排水完成，排污泵停止','ok');}}
+    if(!e._floodA&&e.lvl>92){e._floodA=true;S.floodEvents++;createAlarm('内涝',e.name,'液位逼近满溢（'+Math.round(e.lvl)+'%），存在倒灌风险，应急排水启动');}
+    if(e._floodA&&e.lvl<70)e._floodA=false;
+  });
+  FLOOD.forEach((f,fi)=>{
+    if(S.storm>=2){ f.depth=clamp(f.depth + (S.storm-1)*rnd(0.4,1.1),0,f.cap); }
+    else{ f.depth=clamp(f.depth - rnd(0.8,1.5),0,f.cap); }
+    buf.flood[fi].push(f.depth); if(buf.flood[fi].length>40)buf.flood[fi].shift();
+    if(!f._a&&f.depth>30){f._a=true;S.floodEvents++;createAlarm('内涝','内涝·'+f.name,'积水深度 '+f.depth.toFixed(0)+'cm，存在倒灌/淹没风险');}
+    else if(!f._a&&f.depth>12&&f._a2!==true){f._a2=true;log('告警','内涝·'+f.name+' 积水 '+f.depth.toFixed(0)+'cm，应急抽排启动','warn');}
+    if(f._a&&f.depth<8){f._a=false;f._a2=false;log('恢复','内涝·'+f.name+' 积水已退','ok');}
+  });
+  /* 内涝风险自动侦测 → 自动启动应急预案 */
+  const risk=floodRisk();
+  if(risk.score>=55 && !S._floodPlan && !S.agentBusy){ S._floodPlan=true; autoFloodPlan(risk); }
+  if(risk.score<35) S._floodPlan=false;
+  if(S.forceIn>0){S.forceIn--;const e=EQ.b3living;e.lvl=clamp(e.lvl+2.5,0,100);if(S.forceIn===0)S.valveB3=false;}
+  if(S.storm>0&&now.getTime()>S.stormUntil){S.storm=0;S.typhoon=false;renderDisaster();$('wxChip').className='wxchip';$('wxChip').textContent='🌤 19℃ 晴转多云 · 湿度62%';log('气象','台风/降雨过程结束，恢复常规排水策略，积水逐渐退去','ok');}
+  if(S.pumpFault&&now.getTime()>S.pumpFaultUntil){EQ.pumpL1.fault=false;S.pumpFault=null;log('恢复','生活泵1号故障排除，恢复正常','ok');}
+  TANKS.forEach(k=>{
+    const e=EQ[k];
+    if(!e._alarmHigh&&e.lvl>e.max-2&&e.sys!=='fire'){e._alarmHigh=true;createAlarm('紧急',e.name,'液位超上限，存在溢水风险');}
+    if(e._alarmHigh&&e.lvl<e.max-5)e._alarmHigh=false;
+    if(!e._alarmLow&&e.lvl<e.min+3){e._alarmLow=true;createAlarm('重要',e.name,'液位低于下限，供水保障风险');}
+    if(e._alarmLow&&e.lvl>e.min+8)e._alarmLow=false;
+  });
+  TANKS.concat(PITS).forEach(k=>{buf.levels[k].push(EQ[k].lvl);if(buf.levels[k].length>40)buf.levels[k].shift();});
+  buf.flow.push(curFlow);if(buf.flow.length>40)buf.flow.shift();
+  renderLevels(); renderAgentStatus(); renderPanorama(); renderDisaster();
+  if(curPage==='dashboard'){renderKPIs();drawDashboard();}
+  if(curPage==='monitor'){renderSenTable();}
+  if(curPage==='ai')drawAI();
+  if(curPage==='twin'){refreshTwin();}
+  if(curPage==='kpi')drawKPI();
+}
+
+/* ================= 演示事件 ================= */
+function simTyphoon(){
+  S.storm=5; S.typhoon=true; S.stormUntil=now.getTime()+150000;
+  renderDisaster();
+  $('wxChip').className='wxchip storm'; $('wxChip').textContent='🌀 台风"海葵"·特大暴雨';
+  log('气象','🌀 台风"海葵"逼近上海，市气象台发布暴雨橙色→红色预警','dgr');
+  [1,2,3,4].forEach(i=>setTimeout(()=>{if(S.typhoon){S.storm=5-i;renderDisaster();log('气象','台风强度降至「'+STORM_LVL[S.storm]+'」','warn');}}, i*40000));
+  agentLoop({
+    title:'台风·特大暴雨 → 内涝应急预案',auto:true,
+    decision:'启动最高级内涝应急：排水优先级P1拉满、全部集水井预排、积水点应急抽排、生活水箱提高储备、地下室出入口挡水板关闭',
+    decisionAct:()=>{PITS.forEach(k=>EQ[k].lvl=Math.max(5,EQ[k].lvl-20));S.thrRain=Math.max(1.5,S.thrRain);},
+    exec:'联动执行：4台排污泵+应急潜水泵全力排水，电动阀联动调整',
+    feedback:'预排完成，进入台风值守状态，持续监测集水井与积水点',
+    optimize:'内涝应急策略入库，台风后复盘优化排水时序',
+  });
+}
+function simRain(){
+  S.storm=2; S.stormUntil=now.getTime()+90000; renderDisaster();
+  $('wxChip').className='wxchip rain'; $('wxChip').textContent='🌧️ 降雨预警生效中';
+  log('气象','上海中心气象台发布降雨预警：预计今日夜间有中到大雨','warn');
+  agentLoop({
+    title:'降雨预警 → 排水策略联动',auto:true,
+    decision:'降雨预警触发：下调集水井启动液位、提升排水优先级、预排集水井、生活水箱提高储备水位',
+    decisionAct:()=>{PITS.forEach(k=>EQ[k].lvl=Math.max(5,EQ[k].lvl-12));},
+    exec:'联动执行：排污泵依次预排，电动阀调整，排水优先级提升',
+    feedback:'预排完成，各集水井降至安全液位，进入降雨值守状态',
+  });
+}
+function simHigh(){
+  EQ.b3living.lvl=90;
+  log('注入','仿真注入：B3F生活水箱液位抬升至 90%（逼近上限）','warn');
+}
+function simPumpFault(){
+  EQ.pumpL1.fault=true;EQ.pumpL1.run=false;EQ.pumpL2.run=true;S.pumpFault=true;S.pumpFaultUntil=now.getTime()+60000;
+  createAlarm('紧急','生活水泵1号','运行异常停机，备用泵2号已自动投入');
+  const id='WO-'+now.toISOString().slice(0,10).replace(/-/g,'')+'-'+(++S.woSeq+10);
+  S.orders.unshift({id,src:'生活水泵1号',type:'设备维修',st:'待处理',t:fmtHM(now),who:'待派单'});
+  if(curPage==='orders')drawOrders();
+}
+function simReset(){
+  S.storm=0;S.stormUntil=0;S.typhoon=false;renderDisaster();$('wxChip').className='wxchip';$('wxChip').textContent='🌤 19℃ 晴转多云 · 湿度62%';
+  EQ.pumpL1.fault=false;S.pumpFault=null;EQ.pumpL1.run=false;
+  PITS.forEach(k=>{EQ[k].drainOn=false;EQ['pumpD'+k.slice(-1)].run=false;EQ[k]._floodA=false;});
+  FLOOD.forEach(f=>{f.depth=0;f._a=false;f._a2=false;});
+  EQ.b3living.lvl=64;EQ.roofA.lvl=74;EQ.roofB.lvl=71;
+  log('系统','已复位全部模拟状态','ok');
+  drawTwin();
+}
+
+/* ================= 初始化 ================= */
+function init(){
+  tickClock(); setInterval(tickClock,1000);
+  renderKPIs(); renderLevels(); renderWx(); renderAgentStatus(); renderDashAlarms(); renderAlStats(); renderPanorama(); renderDisaster();
+  buildPipeline(); renderLoopStats(); seedOrders(); renderPatrolTbl(); drawOrders(); renderKpiCards();
+  drawDashboard(); drawTwin(); drawMonitor(); drawAI();
+  $('senFilter').addEventListener('input',renderSenTable);
+  setInterval(simulate,2000);
+  setTimeout(()=>{
+    const h=[{lvl:'重要',src:'B3F集水井③',msg:'液位波动超阈值，已自动排水'},
+      {lvl:'提示',src:'PT-02 压力变送器',msg:'通信中断，转入离线监测'},
+      {lvl:'紧急',src:'B1F生活水池',msg:'液位短时低于下限，自动补水恢复'}];
+    h.forEach((x,i)=>setTimeout(()=>createAlarm(x.lvl,x.src,x.msg),500+i*2600));
+  },3000);
+  log('系统','智慧水务运维系统启动完成，六阶段闭环就绪','ok');
+  log('感知','边缘网关在线 57/58，58个点位开始秒级采集','ok');
+  log('AI','动态阈值模型加载完成，接入气象预报与台风预警数据源','ai');
+}
+init();
+</script>
+</body>
+</html>
